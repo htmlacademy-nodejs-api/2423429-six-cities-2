@@ -1,7 +1,7 @@
 # Личный проект «Шесть городов»
 
 * Студент: [Кирилл Астрамович](https://up.htmlacademy.ru/nodejs-api-individual/2/user/2423429).
-* Наставник: `Неизвестно`.
+* Наставник: [Семён Якушев](https://htmlacademy.ru/profile/id1118791).
 
 ---
 
