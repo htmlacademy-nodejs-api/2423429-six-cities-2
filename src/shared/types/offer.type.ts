@@ -1,3 +1,5 @@
+import { User } from "./user.type.js";
+
 export enum City {
   Paris = 'Paris',
   Cologne = 'Cologne',
