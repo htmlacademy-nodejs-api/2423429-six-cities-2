@@ -1,25 +1,50 @@
-import { citiesName } from './cities-name.enum.js';
-import { ConveniencesType } from './conveniences.enum.js';
-import { HouseType } from './house.type.enum.js';
-import { User } from './user.type.js';
+export enum City {
+  Paris = 'Paris',
+  Cologne = 'Cologne',
+  Brussels = 'Brussels',
+  Amsterdam = 'Amsterdam',
+  Hamburg = 'Hamburg',
+  Dusseldorf = 'Dusseldorf'
+}
+
+export enum HousingType {
+  Apartment = 'apartment',
+  House = 'house',
+  Room = 'room',
+  Hotel = 'hotel'
+}
+
+export enum Convenience {
+  Breakfast = 'Breakfast',
+  AirConditioning = 'Air conditioning',
+  LaptopFriendlyWorkspace = 'Laptop friendly workspace',
+  BabySeat = 'Baby seat',
+  Washer = 'Washer',
+  Towels = 'Towels',
+  Fridge = 'Fridge'
+}
+
+export type Location = {
+  latitude: number;
+  longitude: number;
+};
 
 export type Offer = {
-    name: string;
-    description: string;
-    publish_date: Date;
-    city: citiesName
-    preview_image: string;
-    images: string[];
-    is_premium: boolean;
-    is_favorite: boolean;
-    rating: number;
-    type: HouseType;
-    rooms: number;
-    guests: number;
-    price: number;
-    conveniences: ConveniencesType[];
-    host: User;
-    comments_count: number;
-    latitude: number
-    longitude: number;
-}
+  name: string;
+  description: string;
+  postDate: Date;
+  city: City;
+  previewImage: string;
+  images: string[];
+  isPremium: boolean;
+  isFavorite: boolean;
+  rating: number;
+  type: HousingType;
+  rooms: number;
+  guests: number;
+  price: number;
+  conveniences: Convenience[];
+  host: User;
+  commentsCount: number;
+  location: Location;
+};
