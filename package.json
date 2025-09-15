@@ -14,9 +14,10 @@
     "lint": "eslint src/ --ext .ts",
     "compile": "tsc -p tsconfig.json",
     "clean": "rimraf dist",
-    "ts": "ts-node"
+    "ts": "node --loader ts-node/esm"
   },
   "devDependencies": {
+    "@types/chalk": "^0.4.31",
     "@types/node": "18.17.17",
     "@typescript-eslint/eslint-plugin": "6.7.0",
     "@typescript-eslint/parser": "6.7.0",
@@ -30,5 +31,8 @@
   "engines": {
     "node": "^18.0.0",
     "npm": ">=8"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2"
   }
 }
