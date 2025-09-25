@@ -73,9 +73,12 @@ npm run ts ./src/main.cli.ts -- --import <file> - Импорт данных из
 
 Вызов команды должен выглядеть так:
 
+запустите в одном терминале JSON-server — `npm run mock:server`. Затем откройте второй терминал и выполните команду `--generate`:
+
 ```
-$: ./cli.js --generate 10 ./mocks/mock-offers.tsv http://localhost:3123/api
+npm run ts ./src/main.cli.ts -- --generate 100 ./mocks/test-data.tsv http://localhost:3123/api
 ```
+
 ###
 
 #### Скомпилировать проект
