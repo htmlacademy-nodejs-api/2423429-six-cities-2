@@ -3,6 +3,13 @@ import { City, HousingType, Convenience, Offer } from '../types/offer.type.js';
 import { UserType, User } from '../types/user.type.js';
 
 export function createOffer(offerData: string): Offer {
+  const fields = offerData.split('\t');
+
+  // Проверяем, что достаточно полей
+  if (fields.length < 22) {
+    throw new Error(`Invalid offer data: expected 22 fields, got ${fields.length}`);
+  }
+
   const [
     name,
     description,
@@ -26,7 +33,7 @@ export function createOffer(offerData: string): Offer {
     commentsCount,
     latitude,
     longitude,
-  ] = offerData.replace('\n', '').split('\t');
+  ] = fields;
 
   const cityMapping: Record<string, City> = {
     'Paris': City.Paris,

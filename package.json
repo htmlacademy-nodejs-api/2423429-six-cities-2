@@ -14,7 +14,7 @@
     "lint": "eslint src/ --ext .ts",
     "compile": "tsc -p tsconfig.json",
     "clean": "rimraf dist",
-    "ts": "node --loader ts-node/esm",
+    "ts": "node --loader ts-node/esm main.cli.ts",
     "mock:server": "json-server --watch mocks/mock-server-data.json --port 3123"
   },
   "devDependencies": {

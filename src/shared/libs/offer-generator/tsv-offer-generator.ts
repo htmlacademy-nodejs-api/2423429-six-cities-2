@@ -22,14 +22,17 @@ export class TSVOfferGenerator implements OfferGenerator {
   public generate(): string {
     const title = getRandomItem<string>(this.mockData.titles);
     const description = getRandomItem<string>(this.mockData.descriptions);
-    const city = getRandomItem<string>(this.mockData.cities);
+    const cityName = getRandomItem<string>(this.mockData.cities);
     const previewImage = getRandomItem<string>(this.mockData.offerImages);
-    const type = getRandomItem<string>(this.mockData.types);
-    const goods = getRandomItems<string>(this.mockData.goods).join(';');
-    const user = getRandomItem(this.mockData.users);
+    const housingType = getRandomItem<string>(this.mockData.types);
+    const conveniences = getRandomItems<string>(this.mockData.goods).join(';');
+
+    // Получаем случайного пользователя как массив данных [name, email, avatar, password, type]
+    const userArray = getRandomItem(this.mockData.users).split(';');
+    const [hostName, hostEmail, hostAvatar, hostPassword, hostType] = userArray;
+
     const location = getRandomItem<Location>(this.mockData.locations);
 
-    // Генерируем 6 уникальных изображений
     const images = Array.from({ length: 6 }, () =>
       getRandomItem<string>(this.mockData.offerImages)
     ).join(';');
@@ -44,24 +47,31 @@ export class TSVOfferGenerator implements OfferGenerator {
     const bedrooms = generateRandomValue(MIN_BEDROOMS, MAX_BEDROOMS);
     const maxAdults = generateRandomValue(MIN_ADULTS, MAX_ADULTS);
     const price = generateRandomValue(MIN_PRICE, MAX_PRICE);
+    const commentsCount = generateRandomValue(0, 100);
 
     return [
-      `${title} in ${city}`, // name
-      description, // description
-      createdDate, // date
-      city, // city
-      previewImage, // previewImage
-      images, // images (6 штук через ;)
-      isPremium, // isPremium
-      isFavorite, // isFavorite
-      rating, // rating
-      type, // type
-      bedrooms, // bedrooms
-      maxAdults, // maxAdults
-      price, // price
-      goods, // goods (удобства через ;)
-      user, // host
-      `${location.latitude},${location.longitude}` // location
+      `${title} in ${cityName}`, // name (0)
+      description, // description (1)
+      createdDate, // publishDate (2)
+      cityName, // city (3)
+      previewImage, // previewImage (4)
+      images, // images (5)
+      isPremium.toString(), // isPremium (6)
+      isFavorite.toString(), // isFavorite (7)
+      rating.toString(), // rating (8)
+      housingType, // type (9)
+      bedrooms.toString(), // rooms (10)
+      maxAdults.toString(), // guests (11)
+      price.toString(), // price (12)
+      conveniences, // conveniences (13)
+      hostName?.trim() || 'Default', // hostName (14)
+      hostEmail?.trim() || 'email@example.com', // hostEmail (15)
+      hostAvatar?.trim() || 'default-avatar.jpg', // hostAvatar (16)
+      hostPassword?.trim() || 'defaultpass', // hostPassword (17)
+      hostType?.trim() || 'Regular', // hostType (18)
+      commentsCount.toString(), // commentsCount (19)
+      location.latitude.toString(), // latitude (20)
+      location.longitude.toString() // longitude (21)
     ].join('\t');
   }
 }
