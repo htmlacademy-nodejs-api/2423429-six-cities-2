@@ -16,21 +16,3 @@ export type MockServerData = {
   locations: Location[];
 };
 
-export type Offer = {
-  name: string;
-  description: string;
-  date: Date;
-  city: string;
-  previewImage: string;
-  images: string[];
-  isPremium: boolean;
-  isFavorite: boolean;
-  rating: number;
-  type: string;
-  bedrooms: number;
-  maxAdults: number;
-  price: number;
-  goods: string[];
-  host: string;
-  location: Location;
-};
