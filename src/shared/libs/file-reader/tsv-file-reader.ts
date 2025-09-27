@@ -1,16 +1,13 @@
-/* eslint-disable camelcase */
-import { readFileSync } from 'node:fs';
+import EventEmitter from 'node:events';
 import { FileReader } from './file-reader.interface.js';
 
+export class TSVFileReader extends EventEmitter implements FileReader {
 
-export class TSVFileReader implements FileReader {
-  private rawData = '';
-
-  constructor(private readonly filename: string) {}
-
-  public read(): void {
-    this.rawData = readFileSync(this.filename, { encoding: 'utf-8' });
+  constructor(private readonly filename: string) {
+    super();
   }
 
-
+  public read(): void {
+    //Код для работы с потоками
+  }
 }
