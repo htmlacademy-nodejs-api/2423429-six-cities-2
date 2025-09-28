@@ -48,6 +48,39 @@ npm run ts ./src/main.cli.ts -- --version - Показать версию при
 npm run ts ./src/main.cli.ts -- --import <file> - Импорт данных из TSV
 ```
 
+### `npm run mock:server`
+Запускает JSON-сервер с моковыми данными на порту 3123.
+База данных: mocks/mock-server-data.json
+Эндпоинт: http://localhost:3123/api - все данные доступны через этот endpoint
+
+Структура данных:
+- cities: список городов
+- titles: заголовки предложений
+- descriptions: описания предложений
+- offerImages: изображения предложений
+- types: типы жилья
+- goods: удобства
+- users: имена пользователей
+- emails: email адреса
+- avatars: аватары пользователей
+- locations: координаты городов
+
+### Команда `GenerateCommand` ожидает несколько аргументов:
+
+* `<count>` — обязательный. Количество объявлений для генерации.
+* `<filepath>` — обязательный. Путь к файлу для записи результата.
+* `<url>` — обязательный. URL сервиса (JSON-server).
+
+Вызов команды должен выглядеть так:
+
+запустите в одном терминале JSON-server — `npm run mock:server`. Затем откройте второй терминал и выполните команду `--generate`:
+
+```
+npm run ts ./src/main.cli.ts -- --generate 100 ./mocks/test-data.tsv http://localhost:3123/api
+```
+
+###
+
 #### Скомпилировать проект
 
 ```bash
