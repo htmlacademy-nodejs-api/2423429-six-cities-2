@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 import chalk from 'chalk';
-import { CLIApplication, GenerateCommand, HelpCommand, ImportCommand, VersionCommand } from './cli/index.js';
+import {
+  CLIApplication,
+  GenerateCommand,
+  HelpCommand,
+  ImportCommand,
+  VersionCommand,
+} from './cli/index.js';
 
 // Список обязательных переменных окружения
 // const REQUIRED_ENV_VARS = [
@@ -30,12 +36,14 @@ function bootstrap() {
     ]);
 
     cliApplication.processCommand(process.argv.slice(2));
-
   } catch (error) {
     if (error instanceof Error) {
       console.log(chalk.red('❌ Ошибка:'), error.message);
-      console.log(chalk.yellow('💡 Создайте .env файл с необходимыми переменными'));
-      console.log(chalk.gray(`
+      console.log(
+        chalk.yellow('💡 Создайте .env файл с необходимыми переменными')
+      );
+      console.log(
+        chalk.gray(`
 PORT=3000
 SALT=10
 DB_HOST=localhost
@@ -45,7 +53,8 @@ DB_NAME=six-cities
 DB_PORT=27017
 UPLOAD_DIRECTORY=upload
 JWT_SECRET=your-super-secret-jwt-key
-      `));
+      `)
+      );
     }
     process.exitCode = 1;
   }
