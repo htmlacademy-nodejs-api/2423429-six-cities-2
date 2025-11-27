@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { Logger, PinoLogger } from './shared/libs/logger/index.js';
 import { RestApplication } from './rest/rest.application.js';
 import { RestConfig } from './shared/libs/config/rest.config.js';
