@@ -1,8 +1,9 @@
-import { PinoLogger } from './shared/libs/logger/index.js';
+import { Logger, PinoLogger } from './shared/libs/logger/index.js';
 import { RestApplication } from './rest/rest.application.js';
 import { RestConfig } from './shared/libs/config/rest.config.js';
 import { Container } from 'inversify';
 import { Component } from './shared/types/index.js';
+import { Config, RestSchema } from './shared/libs/config/index.js';
 
 async function bootstrap() {
   const container = new Container();
