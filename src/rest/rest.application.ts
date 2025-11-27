@@ -9,4 +9,3 @@ export class RestApplication {
     this.logger.info('Application initialization');
   }
 }
-
