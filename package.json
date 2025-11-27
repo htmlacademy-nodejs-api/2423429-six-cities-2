@@ -18,7 +18,7 @@
     "mock:server": "json-server --watch mocks/mock-server-data.json --port 3123"
   },
   "devDependencies": {
-    "@types/chalk": "^0.4.31",
+    "@types/chalk": "0.4.31",
     "@types/node": "18.17.17",
     "@typescript-eslint/eslint-plugin": "6.7.0",
     "@typescript-eslint/parser": "6.7.0",
@@ -32,12 +32,13 @@
   },
   "type": "module",
   "engines": {
-    "node": "^18.0.0",
+    "node": "18.0.0",
     "npm": ">=8"
   },
   "dependencies": {
-    "chalk": "^5.6.2",
+    "chalk": "5.6.2",
     "dayjs": "1.11.10",
-    "got": "13.0.0"
+    "got": "13.0.0",
+    "pino": "8.15.1"
   }
 }
