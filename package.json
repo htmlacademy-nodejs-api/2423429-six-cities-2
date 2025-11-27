@@ -40,6 +40,7 @@
   "dependencies": {
     "chalk": "5.6.2",
     "dayjs": "1.11.10",
+    "dotenv": "16.3.1",
     "got": "13.0.0",
     "pino": "8.15.1"
   }
