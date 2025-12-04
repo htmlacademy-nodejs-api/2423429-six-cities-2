@@ -79,7 +79,15 @@ npm run ts ./src/main.cli.ts -- --import <file> - Импорт данных из
 npm run ts ./src/main.cli.ts -- --generate 100 ./mocks/test-data.tsv http://localhost:3123/api
 ```
 
-###
+### DOCKER
+запустите в терминале
+`docker-compose   --file ./docker-compose.yml   --env-file ./.env   --project-name "six-cities"   up   -d`
+
+# Конфигурация Docker Compose:
+* --file ./docker-compose.yml      - путь к файлу docker-compose.yml
+* --env-file ./.env                - путь к файлу с переменными окружения
+* --project-name "six-cities"      - имя проекта для префиксов контейнеров
+* up -d                           - запуск контейнеров в фоновом режиме
 
 #### Скомпилировать проект
 
@@ -146,6 +154,8 @@ npm start
 ### Файл `Contributing.md`
 
 Советы и инструкции по внесению изменений в учебный репозиторий.
+
+
 
 ### Остальное
 
