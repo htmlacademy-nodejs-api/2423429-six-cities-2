@@ -1,29 +1,43 @@
 import { Schema, Document, model } from 'mongoose';
-import { User } from '../../types/index.js';
+import { User, UserType } from '../../types/index.js';
 
 export interface UserDocument extends User, Document {
-  createdAt: Date,
-  updatedAt: Date,
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const userSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+    minlength: [1, 'Min length for name is 1 character'],
+    maxlength: [15, 'Max length for name is 15 characters']
+  },
   email: {
     type: String,
     unique: true,
-    match: [/^([\w-\\.]+@([\w-]+\.)+[\w-]{2,4})?$/, 'Email is incorrect'],
     required: true,
+    match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Email is incorrect']
   },
-  avatarPath: {
+  avatar: {
+    type: String,
+    default: 'default-avatar.jpg'
+  },
+  password: {
     type: String,
     required: true,
-    minlength: [5, 'Min length for avatar path is 5'],
+    minlength: [6, 'Min length for password is 6 characters'],
+    maxlength: [12, 'Max length for password is 12 characters']
   },
-  firstname: {
+  type: {
     type: String,
+    enum: Object.values(UserType),
     required: true,
-    minlength: [2, 'Min length for firstname is 2']
-  },
-  lastname: String,
-}, { timestamps: true });
+    default: UserType.Regular
+  }
+}, {
+  timestamps: true,
+  collection: 'users'
+});
 
 export const UserModel = model<UserDocument>('User', userSchema);
