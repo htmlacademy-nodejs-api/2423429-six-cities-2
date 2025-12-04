@@ -1,5 +1,5 @@
 import { Schema, Document, model } from 'mongoose';
-import { User, UserType } from '../../types/index.js';
+import { User, UserType } from '../../';
 
 export interface UserDocument extends User, Document {
   createdAt: Date;
