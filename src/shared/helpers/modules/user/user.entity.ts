@@ -1,4 +1,4 @@
-import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { prop, getModelForClass, modelOptions, defaultClasses } from '@typegoose/typegoose';
 import { User, UserType } from '../../../types';
 
 @modelOptions({
@@ -7,7 +7,7 @@ import { User, UserType } from '../../../types';
     timestamps: true
   }
 })
-export class UserEntity implements User {
+export class UserEntity extends defaultClasses.TimeStamps implements User {
   @prop({
     required: true,
     minlength: 1,
