@@ -6,3 +6,4 @@ export * from './../types/user.type.js';
 export * from './../types/offer.type.js';
 export * from './offer.js';
 export * from './file-system.js';
+export * from './database.js';
