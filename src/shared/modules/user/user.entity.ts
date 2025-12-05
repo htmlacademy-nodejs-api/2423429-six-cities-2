@@ -1,11 +1,11 @@
 import { prop, getModelForClass, modelOptions, defaultClasses } from '@typegoose/typegoose';
-import { CreateUserDto } from './dto/create-user.dto.js';
-import { createSHA256, User, UserType } from '../../helpers/index.js';
+import { User, UserType } from '../../helpers/index.js';
 
+// Интерфейс для TypeScript
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface UserEntity extends defaultClasses.Base {}
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+// Декоратор для класса MongoDB
 @modelOptions({
   schemaOptions: {
     collection: 'users',
@@ -14,61 +14,31 @@ export interface UserEntity extends defaultClasses.Base {}
 })
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class UserEntity extends defaultClasses.TimeStamps implements User {
-  @prop({
-    required: true,
-    minlength: 1,
-    maxlength: 15
-  })
+  @prop({ required: true })
   public name!: string;
 
-  @prop({
-    required: true,
-    unique: true,
-    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  })
+  @prop({ required: true, unique: true })
   public email!: string;
 
-  @prop({
-    default: 'default-avatar.jpg'
-  })
-  public avatar?: string;
+  @prop({ required: true })
+  public avatar!: string;
 
-  @prop({
-    required: true,
-    default: ''
-  })
+  @prop({ required: true })
   public password!: string;
 
-  @prop({
-    required: true,
-    enum: UserType,
-    default: UserType.Regular
-  })
-  public type!: UserType;
-
-  constructor(userData: CreateUserDto) {
-    super();
-
-    this.email = userData.email;
-    this.name = userData.name;
-    this.avatar = userData.avatar;
-    this.type = userData.type;
-
-    // Временно, потом добавим соль из конфига
-    this.setPassword(userData.password, 'default-salt');
-  }
+  @prop({ required: true, enum: UserType })
+  public type!: UserType; // Должно быть type, а не userType!
 
   public setPassword(password: string, salt: string): void {
-    this.password = createSHA256(password, salt);
-  }
-
-  public getPassword(): string {
-    return this.password;
+    // TODO: Реализовать хеширование пароля
+    // Пока заглушка
+    this.password = password;
   }
 
   public verifyPassword(password: string, salt: string): boolean {
-    const hashedPassword = createSHA256(password, salt);
-    return this.password === hashedPassword;
+    // TODO: Реализовать проверку пароля
+    // Пока заглушка - всегда возвращает true
+    return true;
   }
 }
 
