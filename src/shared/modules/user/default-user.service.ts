@@ -2,9 +2,16 @@ import { UserService } from './user-service.interface.js';
 import { DocumentType } from '@typegoose/typegoose';
 import { UserEntity, UserModel } from './user.entity.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
-import { UserType } from '../../types/index.js';
+import { Component, UserType } from '../../types/index.js';
+import { inject, injectable } from 'inversify';
+import { Logger } from '../../libs/logger/index.js';
 
+@injectable()
 export class DefaultUserService implements UserService {
+  constructor(
+    @inject(Component.Logger) private readonly logger: Logger,
+  ) {}
+
   public async create(dto: CreateUserDto, salt: string): Promise<DocumentType<UserEntity>> {
     const user = new UserEntity();
     user.email = dto.email;
@@ -13,7 +20,10 @@ export class DefaultUserService implements UserService {
     user.type = dto.type;
     user.setPassword(dto.password, salt);
 
-    return UserModel.create(user);
+    const result = await UserModel.create(user);
+    this.logger.info(`New user created: ${user.email}`);
+
+    return result;
   }
 
   public async findById(id: string): Promise<DocumentType<UserEntity> | null> {
@@ -34,8 +44,11 @@ export class DefaultUserService implements UserService {
     const existingUser = await this.findByEmail(userData.email);
 
     if (existingUser) {
+      this.logger.info(`User found: ${userData.email}`);
       return existingUser;
     }
+
+    this.logger.info(`Creating new user: ${userData.email}`);
 
     const createUserDto = new CreateUserDto(
       userData.name,
@@ -50,9 +63,20 @@ export class DefaultUserService implements UserService {
 
   public async verifyPassword(email: string, password: string, salt: string): Promise<boolean> {
     const user = await this.findByEmail(email);
+
     if (!user) {
+      this.logger.warn(`User not found: ${email}`);
       return false;
     }
-    return user.verifyPassword(password, salt);
+
+    const isValid = user.verifyPassword(password, salt);
+
+    if (isValid) {
+      this.logger.info(`Password verified for user: ${email}`);
+    } else {
+      this.logger.warn(`Invalid password for user: ${email}`);
+    }
+
+    return isValid;
   }
 }
