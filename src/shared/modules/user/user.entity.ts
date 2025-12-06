@@ -1,11 +1,9 @@
 import { prop, getModelForClass, modelOptions, defaultClasses } from '@typegoose/typegoose';
-import { User, UserType } from '../../helpers/index.js';
+import { createSHA256, User, UserType } from '../../helpers/index.js';
 
-// Интерфейс для TypeScript
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface UserEntity extends defaultClasses.Base {}
 
-// Декоратор для класса MongoDB
 @modelOptions({
   schemaOptions: {
     collection: 'users',
@@ -27,18 +25,15 @@ export class UserEntity extends defaultClasses.TimeStamps implements User {
   public password!: string;
 
   @prop({ required: true, enum: UserType })
-  public type!: UserType; // Должно быть type, а не userType!
+  public type!: UserType;
 
   public setPassword(password: string, salt: string): void {
-    // TODO: Реализовать хеширование пароля
-    // Пока заглушка
-    this.password = password;
+    this.password = createSHA256(password, salt);
   }
 
   public verifyPassword(password: string, salt: string): boolean {
-    // TODO: Реализовать проверку пароля
-    // Пока заглушка - всегда возвращает true
-    return true;
+    const hashedPassword = createSHA256(password, salt);
+    return this.password === hashedPassword;
   }
 }
 

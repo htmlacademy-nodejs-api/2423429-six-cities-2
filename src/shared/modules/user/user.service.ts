@@ -22,7 +22,7 @@ export class UserService {
     name: string;
     email: string;
     password: string;
-    type: UserType; // Изменено: userType → type
+    type: UserType;
     avatar?: string;
   }): Promise<UserEntity> {
     const existingUser = await this.findByEmail(userData.email);
@@ -31,12 +31,12 @@ export class UserService {
       return existingUser;
     }
 
-    // Создаем DTO с правильными аргументами
+    // Create DTO with correct arguments
     const createUserDto = new CreateUserDto(
       userData.name,
       userData.email,
       userData.password,
-      userData.type, // Изменено: userType → type
+      userData.type,
       userData.avatar || 'default-avatar.jpg'
     );
 
@@ -48,6 +48,6 @@ export class UserService {
     if (!user) {
       return false;
     }
-    return user.verifyPassword?.(password, salt) ?? false;
+    return user.verifyPassword(password, salt);
   }
 }
