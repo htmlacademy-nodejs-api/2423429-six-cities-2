@@ -1,6 +1,7 @@
-import { prop, getModelForClass, modelOptions, defaultClasses, Ref } from '@typegoose/typegoose';
-import { Offer, City, HousingType, Convenience } from '../../helpers/index.js';
-import { UserEntity } from '../user/user.entity.js';
+import { defaultClasses, modelOptions, prop, Ref, getModelForClass } from '@typegoose/typegoose';
+import { Offer, City, HousingType, Convenience, Location } from '../../helpers';
+import { UserEntity } from '../user';
+
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface OfferEntity extends defaultClasses.Base {}
@@ -28,7 +29,14 @@ export class OfferEntity extends defaultClasses.TimeStamps implements Omit<Offer
   @prop({ required: true })
   public previewImage!: string;
 
-  @prop({ required: true, type: [String] })
+  @prop({
+    required: true,
+    type: [String],
+    validate: {
+      validator: (images: string[]) => images.length === 6,
+      message: 'Must have exactly 6 images'
+    }
+  })
   public images!: string[];
 
   @prop({ required: true, default: false })
@@ -62,10 +70,7 @@ export class OfferEntity extends defaultClasses.TimeStamps implements Omit<Offer
   public commentsCount!: number;
 
   @prop({ required: true })
-  public location!: {
-    latitude: number;
-    longitude: number;
-  };
+  public location!: Location;
 }
 
 export const OfferModel = getModelForClass(OfferEntity);
