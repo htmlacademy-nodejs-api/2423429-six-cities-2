@@ -11,7 +11,7 @@ export function createOffer(offerData: string): Offer {
   }
 
   const [
-    name,
+    title,
     description,
     publishDate,
     city,
@@ -85,7 +85,7 @@ export function createOffer(offerData: string): Offer {
   };
 
   return {
-    name: name.trim(),
+    title: title.trim(),
     description: description.trim(),
     postDate: new Date(publishDate),
     city: cityMapping[city] || City.Paris,
