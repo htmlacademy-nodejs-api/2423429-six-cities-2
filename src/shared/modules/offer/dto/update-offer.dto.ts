@@ -1,6 +1,7 @@
 import { City, HousingType, Convenience, Location } from '../../../helpers';
 
 export class UpdateOfferDto {
+  [x: string]: string | number | ObjectId | ObjectIdLike | Uint8Array<ArrayBufferLike> | undefined;
   constructor(
     public title?: string,
     public description?: string,

@@ -1,6 +1,7 @@
 import { City, HousingType, Convenience, Location } from '../../../helpers';
 
 export class CreateOfferDto {
+  [x: string]: any;
   constructor(
     public title: string,
     public description: string,
