@@ -1,6 +1,6 @@
 import { UserService } from './user-service.interface.js';
 import { DocumentType, types } from '@typegoose/typegoose';
-import { UserEntity, UserModel } from './user.entity.js';
+import { UserEntity } from './user.entity.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { Component, UserType } from '../../types/index.js';
 import { inject, injectable } from 'inversify';
@@ -28,11 +28,11 @@ export class DefaultUserService implements UserService {
   }
 
   public async findById(id: string): Promise<DocumentType<UserEntity> | null> {
-    return UserModel.findById(id).exec();
+    return this.userModel.findById(id).exec();
   }
 
   public async findByEmail(email: string): Promise<DocumentType<UserEntity> | null> {
-    return UserModel.findOne({ email }).exec();
+    return this.userModel.findOne({ email }).exec();
   }
 
   public async findOrCreate(userData: {
