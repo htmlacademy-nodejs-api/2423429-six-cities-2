@@ -1,8 +1,10 @@
+// src/shared/libs/file-reader/tsv-file-reader.ts
 import EventEmitter from 'node:events';
 import { FileReader } from './file-reader.interface.js';
 import { createReadStream } from 'node:fs';
 
 const CHUNK_SIZE = 16384; // 16KB
+
 export class TSVFileReader extends EventEmitter implements FileReader {
   constructor(private readonly filename: string) {
     super();
@@ -22,11 +24,14 @@ export class TSVFileReader extends EventEmitter implements FileReader {
       remainingData += chunk.toString();
 
       while ((nextLinePosition = remainingData.indexOf('\n')) >= 0) {
-        const completeRow = remainingData.slice(0, nextLinePosition + 1);
+        const completeRow = remainingData.slice(0, nextLinePosition);
         remainingData = remainingData.slice(++nextLinePosition);
         importedRowCount++;
 
-        this.emit('line', completeRow);
+        // Emit line with resolve callback for async processing
+        await new Promise((resolve) => {
+          this.emit('line', completeRow, resolve);
+        });
       }
     }
 
