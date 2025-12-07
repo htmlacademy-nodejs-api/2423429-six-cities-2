@@ -1,5 +1,5 @@
 import { OfferService } from './offer-service.interface.js';
-import { DocumentType, types, getModelForClass } from '@typegoose/typegoose';
+import { DocumentType, types, Ref } from '@typegoose/typegoose';
 import { OfferEntity } from './offer.entity.js';
 import { CreateOfferDto } from './dto/create-offer.dto.js';
 import { UpdateOfferDto } from './dto/update-offer.dto.js';
@@ -33,9 +33,9 @@ export class DefaultOfferService implements OfferService {
     offer.conveniences = dto.conveniences;
 
     // Используем ObjectId из typegoose
-    offer.host = dto.host as types.Ref<UserEntity>;
+    offer.host = dto.host as unknown as Ref<UserEntity>;
 
-    offer.commentsCount = dto.commentsCount || 0;
+    offer.commentsCount = 0;
     offer.location = dto.location;
 
     const result = await this.offerModel.create(offer);
