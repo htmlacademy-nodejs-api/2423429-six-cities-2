@@ -1,4 +1,3 @@
-
 import { OfferGenerator } from './offer-generator.interface.js';
 import dayjs from 'dayjs';
 import { generateRandomValue, getRandomItem, getRandomItems, getRandomBoolean } from '../../helpers/index.js';
@@ -27,9 +26,16 @@ export class TSVOfferGenerator implements OfferGenerator {
     const housingType = getRandomItem<string>(this.mockData.types);
     const conveniences = getRandomItems<string>(this.mockData.goods).join(';');
 
-    // Получаем случайного пользователя как массив данных [name, email, avatar, password, type]
-    const userArray = getRandomItem(this.mockData.users).split(';');
-    const [hostName, hostEmail, hostAvatar, hostPassword, hostType] = userArray;
+    // Получаем случайные данные пользователя из отдельных массивов
+    const hostName = getRandomItem<string>(this.mockData.users);
+    const hostEmail = getRandomItem<string>(this.mockData.emails);
+    const hostAvatar = getRandomItem<string>(this.mockData.avatars);
+
+    // Генерируем случайный пароль
+    const hostPassword = `pass${Math.random().toString(36).slice(-8)}`;
+
+    // Выбираем случайный тип пользователя
+    const hostType = getRandomBoolean() ? 'Pro' : 'Regular';
 
     const location = getRandomItem<Location>(this.mockData.locations);
 
@@ -50,7 +56,7 @@ export class TSVOfferGenerator implements OfferGenerator {
     const commentsCount = generateRandomValue(0, 100);
 
     return [
-      `${title} in ${cityName}`, // name (0)
+      title,
       description, // description (1)
       createdDate, // publishDate (2)
       cityName, // city (3)
@@ -64,11 +70,11 @@ export class TSVOfferGenerator implements OfferGenerator {
       maxAdults.toString(), // guests (11)
       price.toString(), // price (12)
       conveniences, // conveniences (13)
-      hostName?.trim() || 'Default', // hostName (14)
-      hostEmail?.trim() || 'email@example.com', // hostEmail (15)
-      hostAvatar?.trim() || 'default-avatar.jpg', // hostAvatar (16)
-      hostPassword?.trim() || 'defaultpass', // hostPassword (17)
-      hostType?.trim() || 'Regular', // hostType (18)
+      hostName.trim(), // hostName (14)
+      hostEmail.trim(), // hostEmail (15)
+      hostAvatar.trim(), // hostAvatar (16)
+      hostPassword.trim(), // hostPassword (17)
+      hostType, // hostType (18)
       commentsCount.toString(), // commentsCount (19)
       location.latitude.toString(), // latitude (20)
       location.longitude.toString() // longitude (21)
