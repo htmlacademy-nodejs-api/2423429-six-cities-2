@@ -32,7 +32,7 @@ export type Location = {
 };
 
 export type Offer = {
-  name: string;
+  title: string;
   description: string;
   postDate: Date;
   city: City;

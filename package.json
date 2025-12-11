@@ -15,7 +15,7 @@
     "lint": "eslint src/ --ext .ts",
     "compile": "tsc -p tsconfig.json",
     "clean": "rimraf dist",
-    "ts": "node --loader ts-node/esm",
+    "ts": "node --loader ts-node/esm --experimental-specifier-resolution=node",
     "mock:server": "json-server --watch mocks/mock-server-data.json --port 3123"
   },
   "devDependencies": {
@@ -40,6 +40,7 @@
     "npm": ">=8"
   },
   "dependencies": {
+    "@typegoose/typegoose": "11.5.0",
     "chalk": "5.6.2",
     "convict": "6.2.4",
     "convict-format-with-validator": "6.2.0",
@@ -47,7 +48,8 @@
     "dotenv": "16.3.1",
     "got": "13.0.0",
     "inversify": "6.0.1",
+    "mongoose": "7.5.3",
     "pino": "8.15.1",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.14"
   }
 }
