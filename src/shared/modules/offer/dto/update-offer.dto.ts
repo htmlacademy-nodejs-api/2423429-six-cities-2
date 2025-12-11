@@ -1,4 +1,4 @@
-import { City, HousingType, Convenience, Location } from '../../../helpers';
+import { City, HousingType, Convenience, Location } from '../../../helpers/index.js';
 
 export class UpdateOfferDto {
 

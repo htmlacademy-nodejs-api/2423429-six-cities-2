@@ -1,6 +1,6 @@
 import { Ref } from '@typegoose/typegoose/lib/types.js';
-import { City, HousingType, Convenience, Location } from '../../../helpers';
-import { UserEntity } from '../../user/user.entity';
+import { City, HousingType, Convenience, Location } from '../../../helpers/index.js';
+import { UserEntity } from '../../user/index.js';
 
 export class CreateOfferDto {
   constructor(
