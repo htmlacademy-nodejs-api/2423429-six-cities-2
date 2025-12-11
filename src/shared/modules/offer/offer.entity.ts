@@ -2,7 +2,6 @@ import { defaultClasses, modelOptions, prop, Ref, getModelForClass } from '@type
 import { Offer, City, HousingType, Convenience, Location } from '../../helpers';
 import { UserEntity } from '../user';
 
-
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface OfferEntity extends defaultClasses.Base {}
 
@@ -45,7 +44,7 @@ export class OfferEntity extends defaultClasses.TimeStamps implements Omit<Offer
   @prop({ required: true, default: false })
   public isFavorite!: boolean;
 
-  @prop({ required: true, min: 1, max: 5 })
+  @prop({ required: true, min: 1, max: 5, default: 0 })
   public rating!: number;
 
   @prop({ required: true, enum: HousingType })

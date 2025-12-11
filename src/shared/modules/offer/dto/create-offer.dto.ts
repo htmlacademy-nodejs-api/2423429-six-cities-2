@@ -1,4 +1,6 @@
+import { Ref } from '@typegoose/typegoose/lib/types.js';
 import { City, HousingType, Convenience, Location } from '../../../helpers';
+import { UserEntity } from '../../user/user.entity';
 
 export class CreateOfferDto {
   constructor(
@@ -16,7 +18,7 @@ export class CreateOfferDto {
     public guests: number,
     public price: number,
     public conveniences: Convenience[],
-    public host: string, // ObjectId пользователя
+    public host: Ref<UserEntity>,
     public location: Location
   ) {}
 }
