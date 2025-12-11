@@ -144,3 +144,5 @@ export class DefaultOfferService implements OfferService {
       .exec();
   }
 }
+export { OfferService };
+
