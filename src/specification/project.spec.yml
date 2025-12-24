@@ -89,6 +89,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  # Новый эндпоинт для проверки статуса авторизации
+  /users/status:
+    get:
+      tags: [Пользователи]
+      summary: Проверить статус авторизации
+      description: Возвращает информацию о текущем авторизованном пользователе
+      operationId: checkAuthStatus
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Пользователь авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   # Предложения
   /offers:
     get:
@@ -128,13 +151,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                description:
-                  type: string
-                # ... остальные поля
+              $ref: '#/components/schemas/CreateOfferDto'
       responses:
         '201':
           description: Предложение создано
@@ -142,6 +159,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Offer'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /offers/{offerId}:
     get:
@@ -184,11 +207,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                # ... остальные поля для обновления
+              $ref: '#/components/schemas/UpdateOfferDto'
       responses:
         '200':
           description: Предложение обновлено
@@ -196,6 +215,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Offer'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Нет прав для обновления предложения
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Предложения]
+      summary: Удалить предложение
+      operationId: deleteOffer
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Предложение успешно удалено
+        '401':
+          description: Пользователь не авторизован
+        '403':
+          description: Нет прав для удаления предложения
+        '404':
+          description: Предложение не найдено
 
   # Комментарии
   /offers/{offerId}/comments:
@@ -236,19 +289,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - comment
-                - rating
-              properties:
-                comment:
-                  type: string
-                  minLength: 50
-                  maxLength: 300
-                rating:
-                  type: integer
-                  minimum: 1
-                  maximum: 5
+              $ref: '#/components/schemas/CreateCommentDto'
       responses:
         '201':
           description: Комментарий добавлен
@@ -256,6 +297,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Comment'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Предложение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /comments/{commentId}:
+    delete:
+      tags: [Комментарии]
+      summary: Удалить комментарий
+      operationId: deleteComment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Комментарий успешно удален
+        '401':
+          description: Пользователь не авторизован
+        '403':
+          description: Нет прав для удаления комментария
+        '404':
+          description: Комментарий не найден
 
   # Избранное
   /favorites:
@@ -274,6 +350,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Offer'
+        '401':
+          description: Пользователь не авторизован
 
   /favorites/{offerId}:
     post:
@@ -291,6 +369,10 @@ paths:
       responses:
         '201':
           description: Предложение добавлено в избранное
+        '401':
+          description: Пользователь не авторизован
+        '404':
+          description: Предложение не найдено
 
     delete:
       tags: [Избранное]
@@ -307,6 +389,10 @@ paths:
       responses:
         '204':
           description: Предложение удалено из избранного
+        '401':
+          description: Пользователь не авторизован
+        '404':
+          description: Предложение не найдено в избранном
 
 components:
   schemas:
@@ -386,6 +472,7 @@ components:
         - maxAdults
         - goods
         - host
+        - isFavorite
       properties:
         id:
           type: string
@@ -436,6 +523,10 @@ components:
           example: ["Heating", "Kitchen", "Cable TV", "Washing machine"]
         host:
           $ref: '#/components/schemas/User'
+        isFavorite:
+          type: boolean
+          description: Является ли предложение избранным для текущего пользователя
+          example: true
 
     # Комментарий/отзыв
     Comment:
@@ -505,6 +596,114 @@ components:
           type: string
           example: "password123"
 
+    # Данные для создания предложения
+    CreateOfferDto:
+      type: object
+      required:
+        - title
+        - description
+        - type
+        - price
+        - city
+        - location
+        - bedrooms
+        - maxAdults
+        - goods
+      properties:
+        title:
+          type: string
+          minLength: 10
+          maxLength: 100
+          example: "Beautiful & luxurious studio at great location"
+        description:
+          type: string
+          minLength: 20
+          maxLength: 1024
+          example: "A quiet cozy and picturesque that hides behind a a river by the unique lightness of Amsterdam."
+        type:
+          type: string
+          enum: [apartment, room, house, hotel]
+          example: "apartment"
+        price:
+          type: integer
+          minimum: 100
+          maximum: 100000
+          example: 120
+        city:
+          $ref: '#/components/schemas/City'
+        location:
+          $ref: '#/components/schemas/Location'
+        bedrooms:
+          type: integer
+          minimum: 1
+          maximum: 8
+          example: 3
+        maxAdults:
+          type: integer
+          minimum: 1
+          maximum: 10
+          example: 4
+        goods:
+          type: array
+          items:
+            type: string
+          example: ["Heating", "Kitchen", "Cable TV", "Washing machine"]
+        isPremium:
+          type: boolean
+          default: false
+
+    # Данные для обновления предложения
+    UpdateOfferDto:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 10
+          maxLength: 100
+        description:
+          type: string
+          minLength: 20
+          maxLength: 1024
+        type:
+          type: string
+          enum: [apartment, room, house, hotel]
+        price:
+          type: integer
+          minimum: 100
+          maximum: 100000
+        bedrooms:
+          type: integer
+          minimum: 1
+          maximum: 8
+        maxAdults:
+          type: integer
+          minimum: 1
+          maximum: 10
+        goods:
+          type: array
+          items:
+            type: string
+        isPremium:
+          type: boolean
+
+    # Данные для создания комментария
+    CreateCommentDto:
+      type: object
+      required:
+        - comment
+        - rating
+      properties:
+        comment:
+          type: string
+          minLength: 50
+          maxLength: 300
+          example: "What an amazing view! The house is stunning and in an amazing location."
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+
     # Ответ с ошибкой
     Error:
       type: object
@@ -518,3 +717,13 @@ components:
         statusCode:
           type: integer
           example: 404
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+# Глобальная безопасность
+security:
+  - BearerAuth: []
