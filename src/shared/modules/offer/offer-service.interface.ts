@@ -13,6 +13,11 @@ export interface OfferService {
   findFavorites(): Promise<DocumentType<OfferEntity>[]>;
   toggleFavorite(offerId: string, isFavorite: boolean): Promise<DocumentType<OfferEntity> | null>;
   exists(offerId: string): Promise<boolean>;
+
   incrementCommentCount(offerId: string): Promise<DocumentType<OfferEntity> | null>;
   decrementCommentCount(offerId: string): Promise<DocumentType<OfferEntity> | null>;
+  updateRating(offerId: string, newRating: number): Promise<DocumentType<OfferEntity> | null>;
+
+  updateOfferStats(offerId: string, stats: { rating?: number; commentCount?: number }
+  ): Promise<void>;
 }
