@@ -28,7 +28,7 @@ export class MongoDatabaseClient implements DatabaseClient {
       throw new Error('MongoDB client already connected');
     }
 
-    this.logger.info('Trying to connect to MongoDB…');
+    this.logger.info('Trying to connect to MongoDB...');
 
     let attempt = 0;
     while (attempt < RETRY_COUNT) {

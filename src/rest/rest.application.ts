@@ -37,12 +37,12 @@ export class RestApplication {
 
   public async init() {
     this.logger.info('Application initialization');
-    this.logger.info('Init database…');
+    this.logger.info('Init database...');
     await this._initDb();
     this.logger.info('Init database completed');
 
-    this.logger.info('Try to init server…');
+    this.logger.info('Try to init server...');
     await this._initServer();
-    this.logger.info(`🚀 Server started on http://localhost:${this.config.get('PORT')}`);
+    this.logger.info(`Server started on http://localhost:${this.config.get('PORT')}`);
   }
 }
