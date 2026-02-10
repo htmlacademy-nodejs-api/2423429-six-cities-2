@@ -3,11 +3,19 @@ import asyncHandler from 'express-async-handler';
 import { BaseController } from '../../libs/rest/controller/base-controller.abstract.js';
 import { Logger } from '../../libs/logger/index.js';
 import { HttpMethod } from '../../libs/rest/index.js';
-import { OfferResponseDto } from './index.js';
+import { OfferResponseDto } from './dto/offer-response.dto.js';
+import { OfferService } from './offer-service.interface.js';
+import { CreateOfferDto } from './dto/create-offer.dto.js';
+import { UpdateOfferDto } from './dto/update-offer.dto.js';
+import { plainToInstance } from 'class-transformer';
+import { inject, injectable } from 'inversify';
+import { Component } from '../../types/index.js';
 
+@injectable()
 export class OfferController extends BaseController {
   constructor(
-    protected readonly logger: Logger
+    @inject(Component.Logger) protected readonly logger: Logger,
+    @inject(Component.OfferService) private readonly offerService: OfferService
   ) {
     super(logger);
 
@@ -76,233 +84,149 @@ export class OfferController extends BaseController {
   }
 
   private getOffers = asyncHandler(async (_req: Request, res: Response) => {
-    const mockOffer: OfferResponseDto = {
-      id: '1',
-      title: 'Test Offer',
-      description: 'Test Description',
-      date: new Date(),
-      city: 'Paris',
-      previewImage: 'https://example.com/preview.jpg',
-      images: ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'],
-      isPremium: true,
-      isFavorite: false,
-      rating: 4.5,
-      type: 'apartment',
-      bedrooms: 2,
-      maxAdults: 4,
-      price: 150,
-      goods: ['Wi-Fi', 'Kitchen', 'Heating'],
-      hostId: 'user-1',
-      location: {
-        latitude: 48.8566,
-        longitude: 2.3522
-      }
-    };
+    const offers = await this.offerService.findAll();
 
-    this.ok(res, [mockOffer]);
+    const offersResponse = offers.map((offer) =>
+      plainToInstance(OfferResponseDto, offer.toObject(), {
+        excludeExtraneousValues: true,
+      })
+    );
+
+    this.ok(res, offersResponse);
   });
 
   private getOfferById = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id.toString();
-    const mockOffer: OfferResponseDto = {
-      id: offerId,
-      title: 'Test Offer',
-      description: 'Test Description',
-      date: new Date(),
-      city: 'Paris',
-      previewImage: 'https://example.com/preview.jpg',
-      images: ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'],
-      isPremium: true,
-      isFavorite: false,
-      rating: 4.5,
-      type: 'apartment',
-      bedrooms: 2,
-      maxAdults: 4,
-      price: 150,
-      goods: ['Wi-Fi', 'Kitchen', 'Heating'],
-      hostId: 'user-1',
-      location: {
-        latitude: 48.8566,
-        longitude: 2.3522
-      }
-    };
+    const offer = await this.offerService.findById(offerId);
 
-    this.ok(res, mockOffer);
+    if (!offer) {
+      throw new Error(`Offer with id ${offerId} not found`);
+    }
+
+    const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
+      excludeExtraneousValues: true,
+    });
+
+    this.ok(res, offerResponse);
   });
 
   private getPremiumOffers = asyncHandler(async (req: Request, res: Response) => {
     const city = req.params.city.toString();
-    const mockOffer: OfferResponseDto = {
-      id: 'premium-1',
-      title: `Premium Offer in ${ city}`,
-      description: 'Luxury premium accommodation',
-      date: new Date(),
-      city: city,
-      previewImage: 'https://example.com/premium.jpg',
-      images: ['https://example.com/premium1.jpg', 'https://example.com/premium2.jpg'],
-      isPremium: true,
-      isFavorite: true,
-      rating: 4.9,
-      type: 'house',
-      bedrooms: 4,
-      maxAdults: 8,
-      price: 500,
-      goods: ['Wi-Fi', 'Kitchen', 'Heating', 'Pool', 'Garden', 'Parking'],
-      hostId: 'premium-host-1',
-      location: {
-        latitude: 48.8566,
-        longitude: 2.3522
-      }
-    };
+    const limit = parseInt(req.query.limit as string, 10) || 3;
 
-    this.ok(res, [mockOffer]);
+    const offers = await this.offerService.findPremiumByCity(city, limit);
+    const offersResponse = offers.map((offer) =>
+      plainToInstance(OfferResponseDto, offer.toObject(), {
+        excludeExtraneousValues: true,
+      })
+    );
+
+    this.ok(res, offersResponse);
   });
 
   private getFavoriteOffers = asyncHandler(async (_req: Request, res: Response) => {
-    const mockOffer: OfferResponseDto = {
-      id: 'favorite-1',
-      title: 'Favorite Offer',
-      description: 'My favorite place to stay',
-      date: new Date(),
-      city: 'Amsterdam',
-      previewImage: 'https://example.com/favorite.jpg',
-      images: ['https://example.com/fav1.jpg', 'https://example.com/fav2.jpg'],
-      isPremium: true,
-      isFavorite: true,
-      rating: 4.8,
-      type: 'apartment',
-      bedrooms: 3,
-      maxAdults: 6,
-      price: 300,
-      goods: ['Wi-Fi', 'Kitchen', 'Heating', 'TV', 'Washer'],
-      hostId: 'user-1',
-      location: {
-        latitude: 52.3676,
-        longitude: 4.9041
-      }
-    };
+    const offers = await this.offerService.findFavorites();
+    const offersResponse = offers.map((offer) =>
+      plainToInstance(OfferResponseDto, offer.toObject(), {
+        excludeExtraneousValues: true,
+      })
+    );
 
-    this.ok(res, [mockOffer]);
+    this.ok(res, offersResponse);
   });
 
   private addToFavorite = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id.toString();
-    this.logger.info(`Offer ${offerId} added to favorites`);
+    const offer = await this.offerService.toggleFavorite(offerId, true);
 
-    const mockOffer: OfferResponseDto = {
-      id: offerId,
-      title: 'Updated Favorite Offer',
-      description: 'Test Description',
-      date: new Date(),
-      city: 'Paris',
-      previewImage: 'https://example.com/preview.jpg',
-      images: ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'],
-      isPremium: true,
-      isFavorite: true, // Теперь true
-      rating: 4.5,
-      type: 'apartment',
-      bedrooms: 2,
-      maxAdults: 4,
-      price: 150,
-      goods: ['Wi-Fi', 'Kitchen', 'Heating'],
-      hostId: 'user-1',
-      location: {
-        latitude: 48.8566,
-        longitude: 2.3522
-      }
-    };
+    if (!offer) {
+      throw new Error(`Offer with id ${offerId} not found`);
+    }
 
-    this.ok(res, mockOffer);
+    const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
+      excludeExtraneousValues: true,
+    });
+
+    this.ok(res, offerResponse);
   });
 
   private removeFromFavorite = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id.toString();
-    this.logger.info(`Offer ${offerId} removed from favorites`);
+    const offer = await this.offerService.toggleFavorite(offerId, false);
 
-    const mockOffer: OfferResponseDto = {
-      id: offerId,
-      title: 'Updated Non-Favorite Offer',
-      description: 'Test Description',
-      date: new Date(),
-      city: 'Paris',
-      previewImage: 'https://example.com/preview.jpg',
-      images: ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'],
-      isPremium: true,
-      isFavorite: false, // Теперь false
-      rating: 4.5,
-      type: 'apartment',
-      bedrooms: 2,
-      maxAdults: 4,
-      price: 150,
-      goods: ['Wi-Fi', 'Kitchen', 'Heating'],
-      hostId: 'user-1',
-      location: {
-        latitude: 48.8566,
-        longitude: 2.3522
-      }
-    };
+    if (!offer) {
+      throw new Error(`Offer with id ${offerId} not found`);
+    }
 
-    this.ok(res, mockOffer);
+    const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
+      excludeExtraneousValues: true,
+    });
+
+    this.ok(res, offerResponse);
   });
 
   private createOffer = asyncHandler(async (req: Request, res: Response) => {
-    const mockOffer: OfferResponseDto = {
-      id: 'new-id',
-      title: req.body.title || 'New Offer',
-      description: req.body.description || 'New Description',
-      date: new Date(),
-      city: req.body.city || 'Amsterdam',
-      previewImage: req.body.previewImage || 'https://example.com/default.jpg',
-      images: req.body.images || [],
-      isPremium: req.body.isPremium || false,
+    const { title, description, city, previewImage, images, isPremium, type, bedrooms, maxAdults, price, goods, hostId, location } = req.body;
+
+    if (!title || !description || !city || !previewImage || !type || !bedrooms || !maxAdults || !price || !hostId || !location) {
+      throw new Error('Missing required fields for offer creation');
+    }
+
+    // Преобразуем данные в CreateOfferDto
+    const createOfferDto = plainToInstance(CreateOfferDto, {
+      title,
+      description,
+      postDate: new Date(),
+      city,
+      previewImage,
+      images: images || [],
+      isPremium: Boolean(isPremium),
       isFavorite: false,
       rating: 0,
-      type: req.body.type || 'room',
-      bedrooms: req.body.bedrooms || 1,
-      maxAdults: req.body.maxAdults || 2,
-      price: req.body.price || 100,
-      goods: req.body.goods || [],
-      hostId: req.body.hostId || 'user-1',
-      location: req.body.location || {
-        latitude: 52.3676,
-        longitude: 4.9041
-      }
-    };
+      type,
+      rooms: Number(bedrooms),
+      guests: Number(maxAdults),
+      price: Number(price),
+      conveniences: goods || [],
+      host: hostId,
+      location
+    });
 
-    this.created(res, mockOffer);
+    const offer = await this.offerService.create(createOfferDto);
+
+    const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
+      excludeExtraneousValues: true,
+    });
+
+    this.created(res, offerResponse);
   });
 
   private updateOffer = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id.toString();
-    const mockOffer: OfferResponseDto = {
-      id: offerId,
-      title: req.body.title || 'Updated Offer',
-      description: req.body.description || 'Updated Description',
-      date: new Date(),
-      city: req.body.city || 'Paris',
-      previewImage: req.body.previewImage || 'https://example.com/updated.jpg',
-      images: req.body.images || [],
-      isPremium: req.body.isPremium || true,
-      isFavorite: req.body.isFavorite || false,
-      rating: 4.8,
-      type: req.body.type || 'apartment',
-      bedrooms: req.body.bedrooms || 3,
-      maxAdults: req.body.maxAdults || 6,
-      price: req.body.price || 200,
-      goods: req.body.goods || ['Wi-Fi', 'Kitchen', 'Heating', 'TV'],
-      hostId: req.body.hostId || 'user-1',
-      location: req.body.location || {
-        latitude: 48.8566,
-        longitude: 2.3522
-      }
-    };
 
-    this.ok(res, mockOffer);
+    // Используем Object.assign для создания DTO
+    const updateOfferDto = Object.assign(new UpdateOfferDto(), req.body);
+    const offer = await this.offerService.updateById(offerId, updateOfferDto);
+
+    if (!offer) {
+      throw new Error(`Offer with id ${offerId} not found`);
+    }
+
+    const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
+      excludeExtraneousValues: true,
+    });
+
+    this.ok(res, offerResponse);
   });
 
   private deleteOffer = asyncHandler(async (req: Request, res: Response) => {
-    const offerId = req.params.id;
-    this.logger.info(`Offer deleted: ${offerId}`);
+    const offerId = req.params.id.toString();
+    const offer = await this.offerService.deleteById(offerId);
+
+    if (!offer) {
+      throw new Error(`Offer with id ${offerId} not found`);
+    }
+
     this.noContent<void>(res, undefined as void);
   });
 }

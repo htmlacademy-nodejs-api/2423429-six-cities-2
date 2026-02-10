@@ -16,6 +16,8 @@ export interface OfferService {
 
   incrementCommentCount(offerId: string): Promise<DocumentType<OfferEntity> | null>;
   decrementCommentCount(offerId: string): Promise<DocumentType<OfferEntity> | null>;
+  findByHostId(hostId: string): Promise<DocumentType<OfferEntity>[]>;
+  countByHostId(hostId: string): Promise<number>;
   updateRating(offerId: string, newRating: number): Promise<DocumentType<OfferEntity> | null>;
 
   updateOfferStats(offerId: string, stats: { rating?: number; commentCount?: number }
