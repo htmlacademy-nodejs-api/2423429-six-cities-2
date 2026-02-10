@@ -15,6 +15,11 @@ export class DefaultOfferService implements OfferService {
   ) {}
 
   public async create(dto: CreateOfferDto): Promise<DocumentType<OfferEntity>> {
+  // dto.city теперь string, а не City enum
+  // dto.type теперь string, а не HousingType enum
+  // dto.conveniences теперь string[], а не Convenience[]
+  // dto.host теперь string, а не Ref<UserEntity>
+
     const result = await this.offerModel.create({
       ...dto,
       postDate: dto.postDate || new Date(),

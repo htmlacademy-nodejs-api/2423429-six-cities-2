@@ -10,6 +10,8 @@ import { plainToInstance } from 'class-transformer';
 import { inject, injectable } from 'inversify';
 import { Component } from '../../types/index.js';
 import { Config, RestSchema } from '../../libs/config/index.js';
+import { HttpError } from '../../libs/rest/errors/http-error.js';
+import { StatusCodes } from 'http-status-codes';
 
 @injectable()
 export class UserController extends BaseController {
@@ -46,7 +48,6 @@ export class UserController extends BaseController {
   }
 
   private getUsers = asyncHandler(async (_req: Request, res: Response) => {
-    // В production нужно добавить пагинацию
     const users = await this.userService.find();
     const usersResponse = users.map((user) =>
       plainToInstance(UserResponseDto, user.toObject(), {
@@ -62,7 +63,11 @@ export class UserController extends BaseController {
     const user = await this.userService.findById(userId);
 
     if (!user) {
-      throw new Error(`User with id ${userId} not found`);
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `User with id ${userId} not found`,
+        { userId }
+      );
     }
 
     const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
@@ -76,14 +81,21 @@ export class UserController extends BaseController {
     const { name, email, password, type, avatar } = req.body;
 
     if (!name || !email || !password || !type) {
-      throw new Error('Missing required fields: name, email, password, type');
+      throw new HttpError(
+        StatusCodes.BAD_REQUEST,
+        'Missing required fields: name, email, password, type',
+        { missingFields: { name: !name, email: !email, password: !password, type: !type } }
+      );
     }
 
     const createUserDto = new CreateUserDto(name, email, password, type, avatar);
 
     const salt = this.config.get('SALT');
     if (!salt) {
-      throw new Error('SALT is not configured in environment variables');
+      throw new HttpError(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        'SALT is not configured in environment variables'
+      );
     }
 
     const user = await this.userService.create(createUserDto, salt);
@@ -99,24 +111,37 @@ export class UserController extends BaseController {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      throw new Error('Email and password are required');
+      throw new HttpError(
+        StatusCodes.BAD_REQUEST,
+        'Email and password are required',
+        { missingFields: { email: !email, password: !password } }
+      );
     }
 
     const salt = this.config.get('SALT');
     if (!salt) {
-      throw new Error('SALT is not configured in environment variables');
+      throw new HttpError(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        'SALT is not configured in environment variables'
+      );
     }
 
     const isValid = await this.userService.verifyPassword(email, password, salt);
 
     if (!isValid) {
-      throw new Error('Invalid email or password');
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'Invalid email or password'
+      );
     }
 
     const user = await this.userService.findByEmail(email);
 
     if (!user) {
-      throw new Error('User not found');
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `User with email ${email} not found`
+      );
     }
 
     const userResponse = plainToInstance(UserResponseDto, user.toObject(), {

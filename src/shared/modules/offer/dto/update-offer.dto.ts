@@ -1,21 +1,48 @@
-import { City, HousingType, Convenience, Location } from '../../../helpers/index.js';
+import { Expose } from 'class-transformer';
 
 export class UpdateOfferDto {
+  @Expose()
+  public title?: string;
 
-  constructor(
-    public title?: string,
-    public description?: string,
-    public city?: City,
-    public previewImage?: string,
-    public images?: string[],
-    public isPremium?: boolean,
-    public isFavorite?: boolean,
-    public rating?: number,
-    public type?: HousingType,
-    public rooms?: number,
-    public guests?: number,
-    public price?: number,
-    public conveniences?: Convenience[],
-    public location?: Location
-  ) {}
+  @Expose()
+  public description?: string;
+
+  @Expose()
+  public city?: string;
+
+  @Expose()
+  public previewImage?: string;
+
+  @Expose()
+  public images?: string[];
+
+  @Expose()
+  public isPremium?: boolean;
+
+  @Expose()
+  public isFavorite?: boolean;
+
+  @Expose()
+  public rating?: number;
+
+  @Expose()
+  public type?: string;
+
+  @Expose()
+  public rooms?: number;
+
+  @Expose()
+  public guests?: number;
+
+  @Expose()
+  public price?: number;
+
+  @Expose()
+  public conveniences?: string[];
+
+  @Expose()
+  public location?: {
+    latitude: number;
+    longitude: number;
+  };
 }

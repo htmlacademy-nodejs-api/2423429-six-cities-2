@@ -10,6 +10,8 @@ import { UpdateOfferDto } from './dto/update-offer.dto.js';
 import { plainToInstance } from 'class-transformer';
 import { inject, injectable } from 'inversify';
 import { Component } from '../../types/index.js';
+import { HttpError } from '../../libs/rest/errors/http-error.js';
+import { StatusCodes } from 'http-status-codes';
 
 @injectable()
 export class OfferController extends BaseController {
@@ -100,7 +102,11 @@ export class OfferController extends BaseController {
     const offer = await this.offerService.findById(offerId);
 
     if (!offer) {
-      throw new Error(`Offer with id ${offerId} not found`);
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id ${offerId} not found`,
+        { offerId }
+      );
     }
 
     const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
@@ -140,7 +146,11 @@ export class OfferController extends BaseController {
     const offer = await this.offerService.toggleFavorite(offerId, true);
 
     if (!offer) {
-      throw new Error(`Offer with id ${offerId} not found`);
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id ${offerId} not found`,
+        { offerId }
+      );
     }
 
     const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
@@ -155,7 +165,11 @@ export class OfferController extends BaseController {
     const offer = await this.offerService.toggleFavorite(offerId, false);
 
     if (!offer) {
-      throw new Error(`Offer with id ${offerId} not found`);
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id ${offerId} not found`,
+        { offerId }
+      );
     }
 
     const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
@@ -168,12 +182,30 @@ export class OfferController extends BaseController {
   private createOffer = asyncHandler(async (req: Request, res: Response) => {
     const { title, description, city, previewImage, images, isPremium, type, bedrooms, maxAdults, price, goods, hostId, location } = req.body;
 
+    // Проверяем обязательные поля
     if (!title || !description || !city || !previewImage || !type || !bedrooms || !maxAdults || !price || !hostId || !location) {
-      throw new Error('Missing required fields for offer creation');
+      const missingFields = {
+        title: !title,
+        description: !description,
+        city: !city,
+        previewImage: !previewImage,
+        type: !type,
+        bedrooms: !bedrooms,
+        maxAdults: !maxAdults,
+        price: !price,
+        hostId: !hostId,
+        location: !location
+      };
+
+      throw new HttpError(
+        StatusCodes.BAD_REQUEST,
+        'Missing required fields for offer creation',
+        { missingFields }
+      );
     }
 
-    // Преобразуем данные в CreateOfferDto
-    const createOfferDto = plainToInstance(CreateOfferDto, {
+    // Используем Object.assign для CreateOfferDto
+    const createOfferDto = Object.assign(new CreateOfferDto(), {
       title,
       description,
       postDate: new Date(),
@@ -204,12 +236,16 @@ export class OfferController extends BaseController {
   private updateOffer = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id.toString();
 
-    // Используем Object.assign для создания DTO
+    // Используем Object.assign для UpdateOfferDto
     const updateOfferDto = Object.assign(new UpdateOfferDto(), req.body);
     const offer = await this.offerService.updateById(offerId, updateOfferDto);
 
     if (!offer) {
-      throw new Error(`Offer with id ${offerId} not found`);
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id ${offerId} not found`,
+        { offerId }
+      );
     }
 
     const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
@@ -224,7 +260,11 @@ export class OfferController extends BaseController {
     const offer = await this.offerService.deleteById(offerId);
 
     if (!offer) {
-      throw new Error(`Offer with id ${offerId} not found`);
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id ${offerId} not found`,
+        { offerId }
+      );
     }
 
     this.noContent<void>(res, undefined as void);
