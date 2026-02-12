@@ -24,18 +24,6 @@ export class UserController extends BaseController {
 
     this.addRoute({
       path: '/users',
-      method: HttpMethod.Get,
-      handler: this.getUsers,
-    });
-
-    this.addRoute({
-      path: '/users/:id',
-      method: HttpMethod.Get,
-      handler: this.getUserById,
-    });
-
-    this.addRoute({
-      path: '/users',
       method: HttpMethod.Post,
       handler: this.createUser,
     });
