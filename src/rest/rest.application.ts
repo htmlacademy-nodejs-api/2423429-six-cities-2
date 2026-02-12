@@ -4,14 +4,25 @@ import { inject, injectable } from 'inversify';
 import { Component } from '../shared/types/index.js';
 import { DatabaseClient } from '../shared/libs/database-client/index.js';
 import { getMongoURI } from '../shared/helpers/index.js';
+import express, { Express } from 'express';
+import { Controller } from '../shared/libs/rest/index.js';
+import { ExceptionFilter } from '../shared/libs/rest/exception-filter/exception-filter.interface.js';
+
 
 @injectable()
 export class RestApplication {
+  private readonly server: Express;
+
   constructor(
     @inject(Component.Logger) private readonly logger: Logger,
-    @inject(Component.Config)private readonly config: Config<RestSchema>,
+    @inject(Component.Config) private readonly config: Config<RestSchema>,
     @inject(Component.DatabaseClient) private readonly databaseClient: DatabaseClient,
-  ) {}
+    @inject(Component.UserController) private readonly userController: Controller,
+    @inject(Component.OfferController) private readonly offerController: Controller,
+    @inject(Component.ExceptionFilter) private readonly exceptionFilter: ExceptionFilter
+  ) {
+    this.server = express();
+  }
 
   private async _initDb() {
     const mongoUri = getMongoURI(
@@ -25,11 +36,45 @@ export class RestApplication {
     return this.databaseClient.connect(mongoUri);
   }
 
+  private _initMiddleware() {
+    this.server.use(express.json());
+    this.logger.info('Middleware initialized');
+  }
+
+  private _initControllers() {
+    this.server.use(this.userController.router);
+    this.server.use(this.offerController.router);
+    this.logger.info('Controllers initialized');
+  }
+
+  private _initExceptionFilters() {
+    this.server.use(this.exceptionFilter.catch.bind(this.exceptionFilter));
+    this.logger.info('Exception filters initialized');
+  }
+
+  private async _initServer() {
+    const port = this.config.get('PORT');
+    this.server.listen(port);
+  }
+
   public async init() {
     this.logger.info('Application initialization');
-    this.logger.info(`Get value from env $PORT: ${this.config.get('PORT')}`);
-    this.logger.info('Init database…');
+
+    this.logger.info('Init database...');
     await this._initDb();
     this.logger.info('Init database completed');
+
+    this.logger.info('Init middleware...');
+    this._initMiddleware();
+
+    this.logger.info('Init controllers...');
+    this._initControllers();
+
+    this.logger.info('Init exception filters...');
+    this._initExceptionFilters();
+
+    this.logger.info('Try to init server...');
+    await this._initServer();
+    this.logger.info(`Server started on http://localhost:${this.config.get('PORT')}`);
   }
 }

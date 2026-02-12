@@ -32,7 +32,7 @@ export class OfferEntity extends defaultClasses.TimeStamps implements Omit<Offer
     required: true,
     type: [String],
     validate: {
-      validator: (images: string[]) => images.length === 6,
+      validator: (images: string[]) => images.length === 6 ,
       message: 'Must have exactly 6 images'
     }
   })
@@ -44,7 +44,7 @@ export class OfferEntity extends defaultClasses.TimeStamps implements Omit<Offer
   @prop({ required: true, default: false })
   public isFavorite!: boolean;
 
-  @prop({ required: true, min: 1, max: 5, default: 0 })
+  @prop({ required: true, min: 0, max: 5, default: 0 })
   public rating!: number;
 
   @prop({ required: true, enum: HousingType })

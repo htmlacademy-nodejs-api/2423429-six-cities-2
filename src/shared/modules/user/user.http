@@ -1,0 +1,59 @@
+### Регистрация нового пользователя (обычный)
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "123456",
+  "type": "common"
+}
+
+###
+
+### Регистрация нового пользователя (pro)
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "name": "Jane Smith",
+  "email": "jane@example3.com",
+  "password": "qwerty",
+  "type": "pro",
+  "avatar": "avatar.jpg"
+}
+
+###
+
+### Вход в систему (логин)
+POST http://localhost:3000/users/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "123456"
+}
+
+###
+
+### Вход с неверным паролем (должен вернуть 401)
+POST http://localhost:3000/users/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "wrongpassword"
+}
+
+###
+
+### Попытка регистрации без обязательных полей (должна вернуть 400)
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "name": "Invalid User",
+  "email": "invalid@example.com"
+}
+
+###

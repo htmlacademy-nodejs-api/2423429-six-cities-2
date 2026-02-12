@@ -23,7 +23,7 @@ export enum Convenience {
   BabySeat = 'Baby seat',
   Washer = 'Washer',
   Towels = 'Towels',
-  Fridge = 'Fridge'
+  Fridge = 'Fridge',
 }
 
 export type Location = {

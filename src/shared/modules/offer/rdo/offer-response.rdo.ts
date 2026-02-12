@@ -1,6 +1,9 @@
 import { Expose } from 'class-transformer';
 
-export class CreateOfferDto {
+export class OfferResponseDto {
+  @Expose()
+  public id!: string;
+
   @Expose()
   public title!: string;
 
@@ -8,10 +11,10 @@ export class CreateOfferDto {
   public description!: string;
 
   @Expose()
-  public postDate!: Date;
+  public date!: Date;
 
   @Expose()
-  public city!: string; // Используем string вместо City
+  public city!: string;
 
   @Expose()
   public previewImage!: string;
@@ -29,28 +32,26 @@ export class CreateOfferDto {
   public rating!: number;
 
   @Expose()
-  public type!: string; // Используем string вместо HousingType
+  public type!: string;
 
   @Expose()
-  public rooms!: number;
+  public bedrooms!: number;
 
   @Expose()
-  public guests!: number;
+  public maxAdults!: number;
 
   @Expose()
   public price!: number;
 
   @Expose()
-  public conveniences!: string[]; // Используем string[] вместо Convenience[]
+  public goods!: string[];
 
   @Expose()
-  public host!: string; // Используем string вместо Ref<UserEntity>
+  public hostId!: string;
 
   @Expose()
   public location!: {
     latitude: number;
     longitude: number;
   };
-
-  // Убираем конструктор или делаем его опциональным
 }
