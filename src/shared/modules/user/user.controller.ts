@@ -35,36 +35,6 @@ export class UserController extends BaseController {
     });
   }
 
-  // private getUsers = asyncHandler(async (_req: Request, res: Response) => {
-  //   const users = await this.userService.find();
-  //   const usersResponse = users.map((user) =>
-  //     plainToInstance(UserResponseDto, user.toObject(), {
-  //       excludeExtraneousValues: true,
-  //     })
-  //   );
-
-  //   this.ok(res, usersResponse);
-  // });
-
-  // private getUserById = asyncHandler(async (req: Request, res: Response) => {
-  //   const userId = req.params.id.toString();
-  //   const user = await this.userService.findById(userId);
-
-  //   if (!user) {
-  //     throw new HttpError(
-  //       StatusCodes.NOT_FOUND,
-  //       `User with id ${userId} not found`,
-  //       { userId }
-  //     );
-  //   }
-
-  //   const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
-  //     excludeExtraneousValues: true,
-  //   });
-
-  //   this.ok(res, userResponse);
-  // });
-
   private createUser = asyncHandler(async (req: Request, res: Response) => {
     const { name, email, password, type, avatar } = req.body;
 
@@ -87,7 +57,6 @@ export class UserController extends BaseController {
     }
 
     const user = await this.userService.create(createUserDto, salt);
-
     const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
       excludeExtraneousValues: true,
     });

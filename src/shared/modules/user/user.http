@@ -6,7 +6,7 @@ Content-Type: application/json
   "name": "John Doe",
   "email": "john@example.com",
   "password": "123456",
-  "type": "обычный"
+  "type": "common"
 }
 
 ###
@@ -17,7 +17,7 @@ Content-Type: application/json
 
 {
   "name": "Jane Smith",
-  "email": "jane@example.com",
+  "email": "jane@example3.com",
   "password": "qwerty",
   "type": "pro",
   "avatar": "avatar.jpg"
@@ -57,13 +57,3 @@ Content-Type: application/json
 }
 
 ###
-
-### GET /users - теперь должен возвращать 404 (эндпоинт удален)
-GET http://localhost:3000/users
-Content-Type: application/json
-
-###
-
-### GET /users/:id - теперь должен возвращать 404 (эндпоинт удален)
-GET http://localhost:3000/users/507f1f77bcf86cd799439011
-Content-Type: application/json

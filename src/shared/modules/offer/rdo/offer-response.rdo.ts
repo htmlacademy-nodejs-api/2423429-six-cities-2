@@ -1,4 +1,4 @@
-import { Expose, Type } from 'class-transformer';
+import { Expose } from 'class-transformer';
 
 export class OfferResponseDto {
   @Expose()
@@ -50,7 +50,6 @@ export class OfferResponseDto {
   public hostId!: string;
 
   @Expose()
-  @Type(() => Object)
   public location!: {
     latitude: number;
     longitude: number;

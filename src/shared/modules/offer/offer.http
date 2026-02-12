@@ -8,14 +8,14 @@ Content-Type: application/json
   "description": "Прекрасная квартира с видом на Эйфелеву башню. Полностью меблирована, есть вся необходимая техника. Рядом метро, кафе и магазины.",
   "city": "Paris",
   "previewImage": "apartment-1.jpg",
-  "images": ["apartment-1.jpg", "apartment-2.jpg", "apartment-3.jpg"],
+  "images": ["apartment-1.jpg", "apartment-2.jpg", "apartment-3.jpg", "apartment-1.jpg", "apartment-2.jpg", "apartment-3.jpg"],
   "isPremium": true,
   "type": "apartment",
   "bedrooms": 2,
   "maxAdults": 4,
   "price": 150,
-  "goods": ["Wi-Fi", "Kitchen", "Washer", "Elevator"],
-  "hostId": "694423a789d72214ee02a243",  // Замените на реальный ID пользователя
+  "goods": ["Breakfast"],
+  "hostId": "694423a789d72214ee02a243",
   "location": {
     "latitude": 48.8566,
     "longitude": 2.3522
@@ -51,14 +51,14 @@ Content-Type: application/json
   "description": "Эксклюзивный пентхаус в самом сердце Парижа. Панорамные окна, терраса лифт. Идеально для незабываемого отдыха.",
   "city": "Paris",
   "previewImage": "penthouse-paris.jpg",
-  "images": ["penthouse1.jpg", "penthouse2.jpg", "penthouse3.jpg"],
+  "images": ["penthouse1.jpg", "penthouse2.jpg", "penthouse3.jpg","penthouse1.jpg", "penthouse2.jpg", "penthouse3.jpg"],
   "isPremium": true,
   "type": "apartment",
   "bedrooms": 3,
   "maxAdults": 6,
   "price": 350,
-  "goods": ["Wi-Fi", "Kitchen", "Washer", "Elevator", "Conditioner", "Parking"],
-  "hostId": "694423a789d72214ee02a243",  // ВАШ ID пользователя
+  "goods": ["Breakfast"],
+  "hostId": "694423a789d72214ee02a243",
   "location": {
     "latitude": 48.8584,
     "longitude": 2.2945
@@ -101,7 +101,7 @@ Content-Type: application/json
 ###
 
 ### Удалить предложение
-DELETE http://localhost:3000/offers/67ac3bfc67581f8c4e87556f
+DELETE http://localhost:3000/offers/694423a789d72214ee02a245
 Content-Type: application/json
 
 ###

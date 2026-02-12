@@ -28,12 +28,6 @@ export class OfferController extends BaseController {
       handler: this.getOffers,
     });
 
-    // GET /offers/:id - конкретное предложение
-    this.addRoute({
-      path: '/offers/:id',
-      method: HttpMethod.Get,
-      handler: this.getOfferById,
-    });
 
     // GET /offers/premium/:city - премиальные предложения по городу
     this.addRoute({
@@ -44,7 +38,7 @@ export class OfferController extends BaseController {
 
     // GET /offers/favorites - избранные предложения
     this.addRoute({
-      path: '/offers/favorites',
+      path: '/offers/favorites/',
       method: HttpMethod.Get,
       handler: this.getFavoriteOffers,
     });
@@ -61,6 +55,13 @@ export class OfferController extends BaseController {
       path: '/offers/:id/favorite',
       method: HttpMethod.Delete,
       handler: this.removeFromFavorite,
+    });
+
+    // GET /offers/:id - конкретное предложение
+    this.addRoute({
+      path: '/offers/:id',
+      method: HttpMethod.Get,
+      handler: this.getOfferById,
     });
 
     // POST /offers - создать предложение
@@ -137,6 +138,7 @@ export class OfferController extends BaseController {
         excludeExtraneousValues: true,
       })
     );
+
 
     this.ok(res, offersResponse);
   });
