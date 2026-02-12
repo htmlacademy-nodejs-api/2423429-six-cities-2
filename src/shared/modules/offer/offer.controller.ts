@@ -3,7 +3,7 @@ import asyncHandler from 'express-async-handler';
 import { BaseController } from '../../libs/rest/controller/base-controller.abstract.js';
 import { Logger } from '../../libs/logger/index.js';
 import { HttpMethod } from '../../libs/rest/index.js';
-import { OfferResponseDto } from './dto/offer-response.dto.js';
+import { OfferResponseDto } from './rdo/offer-response.rdo.js';
 import { OfferService } from './offer-service.interface.js';
 import { CreateOfferDto } from './dto/create-offer.dto.js';
 import { UpdateOfferDto } from './dto/update-offer.dto.js';

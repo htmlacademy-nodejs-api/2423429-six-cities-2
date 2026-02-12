@@ -1,12 +1,12 @@
-import { Logger } from '../../libs/logger/index.js';
-import { Config, RestSchema } from '../../libs/config/index.js';
+import { Logger } from '../shared/libs/logger/index.js';
+import { Config, RestSchema } from '../shared/libs/config/index.js';
 import { inject, injectable } from 'inversify';
-import { Component } from '../../types/index.js';
-import { DatabaseClient } from '../../libs/database-client/index.js';
-import { getMongoURI } from '../../helpers/index.js';
+import { Component } from '../shared/types/index.js';
+import { DatabaseClient } from '../shared/libs/database-client/index.js';
+import { getMongoURI } from '../shared/helpers/index.js';
 import express, { Express } from 'express';
-import { Controller } from './index.js';
-import { ExceptionFilter } from './exception-filter/exception-filter.interface.js';
+import { Controller } from '../shared/libs/rest/index.js';
+import { ExceptionFilter } from '../shared/libs/rest/exception-filter/exception-filter.interface.js';
 
 
 @injectable()

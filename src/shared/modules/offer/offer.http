@@ -1,0 +1,99 @@
+### Создать новое предложение (после регистрации пользователя)
+# Сначала выполните запрос на регистрацию и получите ID пользователя
+POST http://localhost:3000/offers
+Content-Type: application/json
+
+{
+  "title": "Уютная квартира в центре Парижа",
+  "description": "Прекрасная квартира с видом на Эйфелеву башню. Полностью меблирована, есть вся необходимая техника. Рядом метро, кафе и магазины.",
+  "city": "Paris",
+  "previewImage": "apartment-1.jpg",
+  "images": ["apartment-1.jpg", "apartment-2.jpg", "apartment-3.jpg"],
+  "isPremium": true,
+  "type": "apartment",
+  "bedrooms": 2,
+  "maxAdults": 4,
+  "price": 150,
+  "goods": ["Wi-Fi", "Kitchen", "Washer", "Elevator"],
+  "hostId": "694423a789d72214ee02a245",  // Замените на реальный ID пользователя
+  "location": {
+    "latitude": 48.8566,
+    "longitude": 2.3522
+  }
+}
+
+###
+
+### Получить все предложения
+GET http://localhost:3000/offers
+Content-Type: application/json
+
+###
+
+### Получить предложение по ID
+GET http://localhost:3000/offers/694423a789d72214ee02a245
+Content-Type: application/json
+
+###
+
+### Получить премиальные предложения по городу
+GET http://localhost:3000/offers/premium/Paris
+Content-Type: application/json
+
+###
+
+### Получить премиальные предложения с лимитом
+GET http://localhost:3000/offers/premium/Paris?limit=5
+Content-Type: application/json
+
+###
+
+### Получить избранные предложения
+GET http://localhost:3000/offers/favorites
+Content-Type: application/json
+
+###
+
+### Добавить предложение в избранное
+POST http://localhost:3000/offers/694423a789d72214ee02a245/favorite
+Content-Type: application/json
+
+###
+
+### Удалить предложение из избранного
+DELETE http://localhost:3000/offers/694423a789d72214ee02a245/favorite
+Content-Type: application/json
+
+###
+
+### Обновить предложение
+PATCH http://localhost:3000/offers/694423a789d72214ee02a245
+Content-Type: application/json
+
+{
+  "price": 180,
+  "isPremium": false
+}
+
+###
+
+### Удалить предложение
+DELETE http://localhost:3000/offers/67ac3bfc67581f8c4e87556f
+Content-Type: application/json
+
+###
+
+### Создать предложение без обязательных полей (должна вернуть 400)
+POST http://localhost:3000/offers
+Content-Type: application/json
+
+{
+  "title": "Неполное предложение",
+  "city": "Paris"
+}
+
+###
+
+### Получить несуществующее предложение (должна вернуть 404)
+GET http://localhost:3000/offers/000000000000000000000000
+Content-Type: application/json

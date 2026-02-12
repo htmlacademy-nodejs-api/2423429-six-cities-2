@@ -3,7 +3,7 @@ import asyncHandler from 'express-async-handler';
 import { BaseController } from '../../libs/rest/controller/base-controller.abstract.js';
 import { Logger } from '../../libs/logger/index.js';
 import { HttpMethod } from '../../libs/rest/index.js';
-import { UserResponseDto } from './dto/user-response.dto.js';
+import { UserResponseDto } from './rdo/user-response.rdo.js';
 import { UserService } from './user-service.interface.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { plainToInstance } from 'class-transformer';
@@ -35,35 +35,35 @@ export class UserController extends BaseController {
     });
   }
 
-  private getUsers = asyncHandler(async (_req: Request, res: Response) => {
-    const users = await this.userService.find();
-    const usersResponse = users.map((user) =>
-      plainToInstance(UserResponseDto, user.toObject(), {
-        excludeExtraneousValues: true,
-      })
-    );
+  // private getUsers = asyncHandler(async (_req: Request, res: Response) => {
+  //   const users = await this.userService.find();
+  //   const usersResponse = users.map((user) =>
+  //     plainToInstance(UserResponseDto, user.toObject(), {
+  //       excludeExtraneousValues: true,
+  //     })
+  //   );
 
-    this.ok(res, usersResponse);
-  });
+  //   this.ok(res, usersResponse);
+  // });
 
-  private getUserById = asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.params.id.toString();
-    const user = await this.userService.findById(userId);
+  // private getUserById = asyncHandler(async (req: Request, res: Response) => {
+  //   const userId = req.params.id.toString();
+  //   const user = await this.userService.findById(userId);
 
-    if (!user) {
-      throw new HttpError(
-        StatusCodes.NOT_FOUND,
-        `User with id ${userId} not found`,
-        { userId }
-      );
-    }
+  //   if (!user) {
+  //     throw new HttpError(
+  //       StatusCodes.NOT_FOUND,
+  //       `User with id ${userId} not found`,
+  //       { userId }
+  //     );
+  //   }
 
-    const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
-      excludeExtraneousValues: true,
-    });
+  //   const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
+  //     excludeExtraneousValues: true,
+  //   });
 
-    this.ok(res, userResponse);
-  });
+  //   this.ok(res, userResponse);
+  // });
 
   private createUser = asyncHandler(async (req: Request, res: Response) => {
     const { name, email, password, type, avatar } = req.body;
