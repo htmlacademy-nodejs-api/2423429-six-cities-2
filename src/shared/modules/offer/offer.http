@@ -15,7 +15,7 @@ Content-Type: application/json
   "maxAdults": 4,
   "price": 150,
   "goods": ["Wi-Fi", "Kitchen", "Washer", "Elevator"],
-  "hostId": "694423a789d72214ee02a245",  // Замените на реальный ID пользователя
+  "hostId": "694423a789d72214ee02a243",  // Замените на реальный ID пользователя
   "location": {
     "latitude": 48.8566,
     "longitude": 2.3522
@@ -41,6 +41,29 @@ GET http://localhost:3000/offers/premium/Paris
 Content-Type: application/json
 
 ###
+
+### Создать премиальное предложение в Париже
+POST http://localhost:3000/offers
+Content-Type: application/json
+
+{
+  "title": "Роскошный пентхаус с видом на Эйфелеву башню",
+  "description": "Эксклюзивный пентхаус в самом сердце Парижа. Панорамные окна, терраса лифт. Идеально для незабываемого отдыха.",
+  "city": "Paris",
+  "previewImage": "penthouse-paris.jpg",
+  "images": ["penthouse1.jpg", "penthouse2.jpg", "penthouse3.jpg"],
+  "isPremium": true,
+  "type": "apartment",
+  "bedrooms": 3,
+  "maxAdults": 6,
+  "price": 350,
+  "goods": ["Wi-Fi", "Kitchen", "Washer", "Elevator", "Conditioner", "Parking"],
+  "hostId": "694423a789d72214ee02a243",  // ВАШ ID пользователя
+  "location": {
+    "latitude": 48.8584,
+    "longitude": 2.2945
+  }
+}
 
 ### Получить премиальные предложения с лимитом
 GET http://localhost:3000/offers/premium/Paris?limit=5
