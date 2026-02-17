@@ -206,7 +206,6 @@ export class OfferController extends BaseController {
       );
     }
 
-    // Используем Object.assign для CreateOfferDto
     const createOfferDto = Object.assign(new CreateOfferDto(), {
       title,
       description,
@@ -238,7 +237,6 @@ export class OfferController extends BaseController {
   private updateOffer = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id.toString();
 
-    // Используем Object.assign для UpdateOfferDto
     const updateOfferDto = Object.assign(new UpdateOfferDto(), req.body);
     const offer = await this.offerService.updateById(offerId, updateOfferDto);
 
