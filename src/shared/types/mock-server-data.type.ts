@@ -1,4 +1,4 @@
-export type Location = {
+export type MockLocation = {
   latitude: number;
   longitude: number;
 };
@@ -13,6 +13,6 @@ export type MockServerData = {
   users: string[];
   emails: string[];
   avatars: string[];
-  locations: Location[];
+  Locations: MockLocation;
 };
 

@@ -1,3 +1,4 @@
+// src/shared/modules/comment/comment.service.ts
 import { inject, injectable } from 'inversify';
 import { CommentService } from './comment-service.interface.js';
 import { DocumentType, types } from '@typegoose/typegoose';
@@ -16,14 +17,19 @@ export class DefaultCommentService implements CommentService {
     @inject(Component.OfferService) private readonly offerService: OfferService
   ) {}
 
+  // ✅ Добавляем метод checkOfferExists
+  public async checkOfferExists(offerId: string): Promise<boolean> {
+    return this.offerService.exists(offerId);
+  }
+
   public async create(dto: CreateCommentDto, userId: string): Promise<DocumentType<CommentEntity>> {
-    // 1. Проверяем существование оффера
+    // Проверяем существование оффера
     const offerExists = await this.offerService.exists(dto.offerId);
     if (!offerExists) {
       throw new Error(`Offer with id ${dto.offerId} not found`);
     }
 
-    // 2. Создаём комментарий
+    // Создаём комментарий
     const result = await this.commentModel.create({
       ...dto,
       userId: new Types.ObjectId(userId),
@@ -32,14 +38,14 @@ export class DefaultCommentService implements CommentService {
 
     this.logger.info(`New comment created for offer ${dto.offerId} by user ${userId}`);
 
-    // 3. АТОМАРНО УВЕЛИЧИВАЕМ СЧЁТЧИК КОММЕНТАРИЕВ
+    // Атомарно увеличиваем счётчик комментариев
     await this.offerService.incrementCommentCount(dto.offerId);
 
-    // 4. ПЕРЕСЧИТЫВАЕМ И ОБНОВЛЯЕМ РЕЙТИНГ
+    // Пересчитываем и обновляем рейтинг
     const averageRating = await this.getAverageRating(dto.offerId);
     await this.offerService.updateRating(dto.offerId, averageRating);
 
-    // 5. Возвращаем комментарий с информацией об авторе
+    // Возвращаем комментарий с информацией об авторе
     return result.populate('userId');
   }
 
@@ -53,14 +59,14 @@ export class DefaultCommentService implements CommentService {
   }
 
   public async deleteByOfferId(offerId: string): Promise<void> {
-    // 1. Удаляем все комментарии оффера
+    // Удаляем все комментарии оффера
     const result = await this.commentModel
       .deleteMany({ offerId: new Types.ObjectId(offerId) })
       .exec();
 
     this.logger.info(`Deleted ${result.deletedCount} comments for offer ${offerId}`);
 
-    // 2. СБРАСЫВАЕМ СТАТИСТИКУ ОФФЕРА
+    // Сбрасываем статистику оффера
     if (result.deletedCount > 0) {
       await this.offerService.updateOfferStats(offerId, {
         rating: 0,

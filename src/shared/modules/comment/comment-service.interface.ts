@@ -8,4 +8,5 @@ export interface CommentService {
   deleteByOfferId(offerId: string): Promise<void>;
   countByOfferId(offerId: string): Promise<number>;
   getAverageRating(offerId: string): Promise<number>;
+  checkOfferExists(offerId: string): Promise<boolean>;
 }
