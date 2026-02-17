@@ -23,7 +23,7 @@ export class CommentController extends BaseController {
   ) {
     super(logger);
 
-    this.logger.info('CommentController initialized');
+    console.log('CommentController initialized!!!');
 
     // GET /offers/:offerId/comments - получить комментарии к предложению
     this.addRoute({
@@ -78,16 +78,13 @@ export class CommentController extends BaseController {
       );
     }
 
-    // Объединяем данные из тела запроса с offerId из URL
-    const commentData: CreateCommentDto = {
+    // Создаем комментарий - передаем один объект со всеми полями
+    const comment = await this.commentService.create({
       text: dto.text,
       rating: dto.rating,
       userId: dto.userId,
       offerId: offerId
-    };
-
-    // Создаем комментарий
-    const comment = await this.commentService.create(commentData);
+    });
 
     const commentResponse = plainToInstance(CommentResponseDto, comment.toObject(), {
       excludeExtraneousValues: true,
