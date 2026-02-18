@@ -1,0 +1,145 @@
+### ====================================
+###    ТЕСТИРОВАНИЕ КОММЕНТАРИЕВ
+### ====================================
+
+### 1. Получить все комментарии к предложению
+GET http://localhost:3000/offers/694423a789d72214ee02a24a/comments
+Content-Type: application/json
+
+###
+
+### 2. Создать новый комментарий (успешный)
+POST http://localhost:3000/offers/694423a789d72214ee02a24a/comments
+Content-Type: application/json
+
+{
+  "text": "Отличное предложение! Всё очень понравилось. Рекомендую!",
+  "rating": 5,
+  "userId": "694423a789d72214ee02a243"
+}
+
+###
+
+### 3. Создать еще один комментарий
+POST http://localhost:3000/offers/694423a789d72214ee02a252/comments
+Content-Type: application/json
+
+{
+  "text": "Хорошее место, чисто и уютно. Рядом есть магазины и остановки.",
+  "rating": 4,
+  "userId": "694423a789d72214ee02a243"
+}
+
+###
+
+### 4. Создать комментарий с минимальной длиной текста
+POST http://localhost:3000/offers/694423a789d72214ee02a24a/comments
+Content-Type: application/json
+
+{
+  "text": "Ок",
+  "rating": 5,
+  "userId": "694423a789d72214ee02a243"
+}
+// Должен вернуть ошибку: текст слишком короткий (минимум 5 символов)
+
+###
+
+### 5. Создать комментарий с неверным рейтингом
+POST http://localhost:3000/offers/694423a789d72214ee02a24a/comments
+Content-Type: application/json
+
+{
+  "text": "Нормальное место, но есть нюансы",
+  "rating": 10,
+  "userId": "694423a789d72214ee02a243"
+}
+// Должен вернуть ошибку: рейтинг должен быть от 1 до 5
+
+###
+
+### 6. Создать комментарий с неверным userId
+POST http://localhost:3000/offers/694423a789d72214ee02a24a/comments
+Content-Type: application/json
+
+{
+  "text": "Тестовый комментарий",
+  "rating": 3,
+  "userId": "invalid-user-id"
+}
+// Должен вернуть ошибку: неверный формат ObjectId
+
+###
+
+### 7. Создать комментарий без обязательных полей
+POST http://localhost:3000/offers/694423a789d72214ee02a24a/comments
+Content-Type: application/json
+
+{
+  "text": "Только текст"
+}
+// Должен вернуть ошибку: missing required fields
+
+###
+
+### 8. Получить комментарии для несуществующего предложения
+GET http://localhost:3000/offers/000000000000000000000000/comments
+Content-Type: application/json
+// Должен вернуть пустой массив (комментариев нет)
+
+###
+
+### 9. Создать комментарий для несуществующего предложения
+POST http://localhost:3000/offers/000000000000000000000000/comments
+Content-Type: application/json
+
+{
+  "text": "Это предложение не существует",
+  "rating": 3,
+  "userId": "694423a789d72214ee02a243"
+}
+// Должен вернуть 404 Not Found
+
+###
+
+### 10. Проверить валидацию ObjectId middleware
+GET http://localhost:3000/offers/not-an-object-id/comments
+Content-Type: application/json
+// Должен вернуть 400 Bad Request (невалидный ObjectId)
+
+###
+
+### 11. Получить комментарии после добавления
+GET http://localhost:3000/offers/694423a789d72214ee02a24a/comments
+Content-Type: application/json
+// Должен вернуть все добавленные комментарии
+
+###
+
+### 12. Создать комментарий с кириллицей
+POST http://localhost:3000/offers/694423a789d72214ee02a24a/comments
+Content-Type: application/json
+
+{
+  "text": "Отличная квартира в центре города. Всё понравилось, обязательно вернусь!",
+  "rating": 5,
+  "userId": "694423a789d72214ee02a248"
+}
+
+###
+
+### 13. Создать комментарий с рейтингом 1 (минимальный)
+POST http://localhost:3000/offers/694423a789d72214ee02a24a/comments
+Content-Type: application/json
+
+{
+  "text": "Не понравилось, шумно и грязно",
+  "rating": 1,
+  "userId": "694423a789d72214ee02a243"
+}
+
+###
+
+### 14. Проверить, что комментарии сортируются по дате (новые первые)
+GET http://localhost:3000/offers/694423a789d72214ee02a24a/comments
+Content-Type: application/json

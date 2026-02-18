@@ -1,9 +1,10 @@
-import { injectable } from 'inversify'; // Добавляем импорт
+import { injectable } from 'inversify';
 import { StatusCodes } from 'http-status-codes';
-import { Response, Router } from 'express';
+import { Response, Router, RequestHandler } from 'express';
 import { Controller } from './controller.interface.js';
 import { Logger } from '../../logger/index.js';
 import { Route } from '../types/route.interface.js';
+import { Middleware } from '../middleware/middleware.interface.js';
 
 const DEFAULT_CONTENT_TYPE = 'application/json';
 
@@ -22,8 +23,21 @@ export abstract class BaseController implements Controller {
   }
 
   public addRoute(route: Route): void {
-    this._router[route.method](route.path, route.handler.bind(this));
-    this.logger.info(`Route registered: ${route.method.toUpperCase()} ${route.path}`);
+    // Собираем middleware-функции
+    const middlewares: RequestHandler[] = (route.middlewares || [])
+      .map((middleware: Middleware) => middleware.execute.bind(middleware));
+
+    // Добавляем хендлер после всех middleware
+    const handlers = [...middlewares, route.handler.bind(this)];
+
+    // Регистрируем маршрут с массивом обработчиков
+    this._router[route.method](route.path, handlers);
+
+    // Логируем информацию о маршруте
+    const middlewareInfo = route.middlewares?.length
+      ? ` with ${route.middlewares.length} middleware(s)`
+      : '';
+    this.logger.info(`Route registered: ${route.method.toUpperCase()} ${route.path}${middlewareInfo}`);
   }
 
   public send<T>(res: Response, statusCode: number, data: T): void {
