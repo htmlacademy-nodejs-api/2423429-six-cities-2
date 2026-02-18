@@ -1,4 +1,3 @@
-// src/shared/libs/rest/middleware/validate-dto.middleware.ts
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
 import { StatusCodes } from 'http-status-codes';
