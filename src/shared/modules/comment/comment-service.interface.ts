@@ -1,4 +1,3 @@
-// src/shared/modules/comment/comment-service.interface.ts
 import { DocumentType } from '@typegoose/typegoose';
 import { CommentEntity } from './comment.entity.js';
 import { CreateCommentDto } from './dto/create-comment.dto.js';

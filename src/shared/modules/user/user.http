@@ -17,10 +17,10 @@ Content-Type: application/json
 
 {
   "name": "Jane Smith",
-  "email": "jane@example3.com",
+  "email": "jane@example6.com",
   "password": "qwerty",
   "type": "pro",
-  "avatar": "avatar.jpg"
+  "avatar": "test-avatar.jpg"
 }
 
 ###

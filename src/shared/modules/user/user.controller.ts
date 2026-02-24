@@ -1,4 +1,3 @@
-// src/shared/modules/user/user.controller.ts
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { BaseController } from '../../libs/rest/controller/base-controller.abstract.js';
@@ -15,6 +14,11 @@ import { Config, RestSchema } from '../../libs/config/index.js';
 import { HttpError } from '../../libs/rest/errors/http-error.js';
 import { StatusCodes } from 'http-status-codes';
 import { ValidateDtoMiddleware } from '../../libs/rest/middleware/validate-dto.middleware.js';
+import { ValidateObjectIdMiddleware } from '../../libs/rest/middleware/validate-objectid.middleware.js';
+import { DocumentExistsMiddleware } from '../../libs/rest/middleware/document-exists.middleware.js';
+import { UploadFileMiddleware } from '../../libs/rest/middleware/upload-file.middleware.js';
+import { unlink } from 'node:fs/promises';
+import { join } from 'node:path';
 
 @injectable()
 export class UserController extends BaseController {
@@ -39,6 +43,32 @@ export class UserController extends BaseController {
       method: HttpMethod.Post,
       handler: this.login,
       middlewares: [new ValidateDtoMiddleware(loginUserSchema)]
+    });
+
+    this.addRoute({
+      path: '/users/:userId/avatar',
+      method: HttpMethod.Post,
+      handler: this.uploadAvatar,
+      middlewares: [
+        new ValidateObjectIdMiddleware('userId'),
+        new DocumentExistsMiddleware(this.userService, 'User', 'userId'),
+        new UploadFileMiddleware(
+          this.config.get('UPLOAD_DIRECTORY'),
+          'avatar',
+          5 * 1024 * 1024 // 5 Mb
+        ),
+      ]
+    });
+
+    // Добавим возможность удаления аватара
+    this.addRoute({
+      path: '/users/:userId/avatar',
+      method: HttpMethod.Delete,
+      handler: this.deleteAvatar,
+      middlewares: [
+        new ValidateObjectIdMiddleware('userId'),
+        new DocumentExistsMiddleware(this.userService, 'User', 'userId')
+      ]
     });
   }
 
@@ -96,6 +126,98 @@ export class UserController extends BaseController {
     this.ok(res, {
       user: userResponse,
       token: 'jwt-token-will-be-added-later'
+    });
+  });
+
+  private uploadAvatar = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.params.userId as string;
+    const file = req.file;
+
+    if (!file) {
+      throw new HttpError(
+        StatusCodes.BAD_REQUEST,
+        'Avatar file is missing'
+      );
+    }
+
+    // Получаем текущего пользователя (уже проверен middleware)
+    const user = await this.userService.findById(userId);
+
+    if (!user) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `User with id ${userId} not found`
+      );
+    }
+
+    // Если у пользователя уже был аватар - удаляем старый файл
+    if (user.avatar) {
+      try {
+        const oldFileName = user.avatar.replace('/static/', '');
+        const oldFilePath = join(process.cwd(), this.config.get('UPLOAD_DIRECTORY'), oldFileName);
+        await unlink(oldFilePath);
+        this.logger.info(`Old avatar deleted: ${oldFileName}`);
+      } catch (error) {
+        this.logger.warn(`Failed to delete old avatar: ${error}`);
+      }
+    }
+
+    // Формируем URL для нового аватара
+    const avatarUrl = `/static/${file.filename}`;
+
+    // Обновляем аватар пользователя
+    user.avatar = avatarUrl;
+    await user.save();
+
+    const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
+      excludeExtraneousValues: true,
+    });
+
+    this.ok(res, {
+      success: true,
+      user: userResponse,
+      avatar: avatarUrl,
+      message: 'Avatar uploaded successfully'
+    });
+  });
+
+  private deleteAvatar = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.params.userId as string;
+
+    // Получаем пользователя (уже проверен middleware)
+    const user = await this.userService.findById(userId);
+
+    if (!user) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `User with id ${userId} not found`
+      );
+    }
+
+    // Если есть аватар - удаляем файл
+    if (user.avatar) {
+      try {
+        const fileName = user.avatar.replace('/static/', '');
+        const filePath = join(process.cwd(), this.config.get('UPLOAD_DIRECTORY'), fileName);
+        await unlink(filePath);
+        this.logger.info(`Avatar deleted: ${fileName}`);
+      } catch (error) {
+        this.logger.warn(`Failed to delete avatar file: ${error}`);
+      }
+    }
+
+    // Убираем аватар у пользователя
+    user.avatar = '';
+    await user.save();
+
+    const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
+      excludeExtraneousValues: true,
+    });
+
+    this.ok(res, {
+      success: true,
+      user: userResponse,
+      message: 'Avatar deleted successfully'
     });
   });
 }
