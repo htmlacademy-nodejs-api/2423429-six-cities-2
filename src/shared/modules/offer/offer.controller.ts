@@ -5,93 +5,162 @@ import { Logger } from '../../libs/logger/index.js';
 import { HttpMethod } from '../../libs/rest/index.js';
 import { OfferResponseDto } from './rdo/offer-response.rdo.js';
 import { OfferService } from './offer-service.interface.js';
-import { CreateOfferDto } from './dto/create-offer.dto.js';
-import { UpdateOfferDto } from './dto/update-offer.dto.js';
+import { CreateOfferDto, createOfferSchema } from './dto/create-offer.dto.js';
+import { UpdateOfferDto, updateOfferSchema } from './dto/update-offer.dto.js';
 import { plainToInstance } from 'class-transformer';
 import { inject, injectable } from 'inversify';
 import { Component } from '../../types/index.js';
 import { HttpError } from '../../libs/rest/errors/http-error.js';
 import { StatusCodes } from 'http-status-codes';
+import { CommentService } from '../comment/comment-service.interface.js';
+import { ValidateDtoMiddleware } from '../../libs/rest/middleware/validate-dto.middleware.js';
+import { ValidateObjectIdMiddleware } from '../../libs/rest/middleware/validate-objectid.middleware.js';
+import { DocumentExistsMiddleware } from '../../libs/rest/middleware/document-exists.middleware.js';
+import { Config, RestSchema } from '../../libs/config/index.js';
+import { UploadFileMiddleware } from '../../libs/rest/middleware/upload-file.middleware.js';
 
 @injectable()
 export class OfferController extends BaseController {
   constructor(
     @inject(Component.Logger) protected readonly logger: Logger,
-    @inject(Component.OfferService) private readonly offerService: OfferService
+    @inject(Component.OfferService) private readonly offerService: OfferService,
+    @inject(Component.CommentService) private readonly commentService: CommentService,
+     @inject(Component.Config) private readonly config: Config<RestSchema>,
   ) {
     super(logger);
 
-    // GET /offers - все предложения
+    this.logger.info('OfferController initialized');
+
+    // GET /offers - all offers
     this.addRoute({
       path: '/offers',
       method: HttpMethod.Get,
       handler: this.getOffers,
     });
 
-
-    // GET /offers/premium/:city - премиальные предложения по городу
+    // GET /offers/premium/:city - premium offers by city
     this.addRoute({
       path: '/offers/premium/:city',
       method: HttpMethod.Get,
       handler: this.getPremiumOffers,
     });
 
-    // GET /offers/favorites - избранные предложения
+    // GET /offers/favorites - favorite offers
     this.addRoute({
-      path: '/offers/favorites/',
+      path: '/offers/favorites',
       method: HttpMethod.Get,
       handler: this.getFavoriteOffers,
     });
 
-    // POST /offers/:id/favorite - добавить в избранное
+    // POST /offers/:id/favorite - add to favorites
     this.addRoute({
       path: '/offers/:id/favorite',
       method: HttpMethod.Post,
       handler: this.addToFavorite,
+      middlewares: [
+        new ValidateObjectIdMiddleware('id'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
+      ]
     });
 
-    // DELETE /offers/:id/favorite - удалить из избранного
+    // DELETE /offers/:id/favorite - remove from favorites
     this.addRoute({
       path: '/offers/:id/favorite',
       method: HttpMethod.Delete,
       handler: this.removeFromFavorite,
+      middlewares: [
+        new ValidateObjectIdMiddleware('id'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
+      ]
     });
 
-    // GET /offers/:id - конкретное предложение
+    // GET /offers/:id - get offer by id
     this.addRoute({
       path: '/offers/:id',
       method: HttpMethod.Get,
       handler: this.getOfferById,
+      middlewares: [
+        new ValidateObjectIdMiddleware('id'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
+      ]
     });
 
-    // POST /offers - создать предложение
+    // GET /offers/:id/comments - get comments for offer
+    this.addRoute({
+      path: '/offers/:id/comments',
+      method: HttpMethod.Get,
+      handler: this.getOfferComments,
+      middlewares: [
+        new ValidateObjectIdMiddleware('id'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
+      ]
+    });
+
+    // POST /offers - create offer
     this.addRoute({
       path: '/offers',
       method: HttpMethod.Post,
       handler: this.createOffer,
+      middlewares: [new ValidateDtoMiddleware(createOfferSchema)]
     });
 
-    // PATCH /offers/:id - обновить предложение
+    // PATCH /offers/:id - update offer
     this.addRoute({
       path: '/offers/:id',
       method: HttpMethod.Patch,
       handler: this.updateOffer,
+      middlewares: [
+        new ValidateObjectIdMiddleware('id'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id'),
+        new ValidateDtoMiddleware(updateOfferSchema)
+      ]
     });
 
-    // DELETE /offers/:id - удалить предложение
+    // DELETE /offers/:id - delete offer
     this.addRoute({
       path: '/offers/:id',
       method: HttpMethod.Delete,
       handler: this.deleteOffer,
+      middlewares: [
+        new ValidateObjectIdMiddleware('id'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
+      ]
+    });
+
+    this.addRoute({
+      path: '/offers/:id/images',
+      method: HttpMethod.Post,
+      handler: this.uploadImages,
+      middlewares: [
+        new ValidateObjectIdMiddleware('id'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id'),
+        new UploadFileMiddleware(
+          this.config.get('UPLOAD_DIRECTORY'),
+          'images', // поле для нескольких файлов
+          10 * 1024 * 1024 // 10MB для нескольких изображений
+        )
+      ]
     });
   }
 
   private getOffers = asyncHandler(async (_req: Request, res: Response) => {
     const offers = await this.offerService.findAll();
 
-    const offersResponse = offers.map((offer) =>
-      plainToInstance(OfferResponseDto, offer.toObject(), {
-        excludeExtraneousValues: true,
+    const offersResponse = await Promise.all(
+      offers.map(async (offer) => {
+        const offerDto = plainToInstance(OfferResponseDto, offer.toObject(), {
+          excludeExtraneousValues: true,
+        });
+
+        // Добавляем статистику комментариев
+        const commentsCount = await this.commentService.countByOfferId(offer.id);
+        const averageRating = await this.commentService.getAverageRating(offer.id);
+
+        return {
+          ...offerDto,
+          commentsCount,
+          rating: averageRating || 0
+        };
       })
     );
 
@@ -99,32 +168,44 @@ export class OfferController extends BaseController {
   });
 
   private getOfferById = asyncHandler(async (req: Request, res: Response) => {
-    const offerId = req.params.id.toString();
+    const offerId = req.params.id as string;
     const offer = await this.offerService.findById(offerId);
 
-    if (!offer) {
-      throw new HttpError(
-        StatusCodes.NOT_FOUND,
-        `Offer with id ${offerId} not found`,
-        { offerId }
-      );
-    }
-
-    const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
+    const offerResponse = plainToInstance(OfferResponseDto, offer?.toObject(), {
       excludeExtraneousValues: true,
     });
 
-    this.ok(res, offerResponse);
+    // Добавляем статистику комментариев
+    const commentsCount = await this.commentService.countByOfferId(offerId);
+    const averageRating = await this.commentService.getAverageRating(offerId);
+
+    this.ok(res, {
+      ...offerResponse,
+      commentsCount,
+      rating: averageRating || 0
+    });
   });
 
   private getPremiumOffers = asyncHandler(async (req: Request, res: Response) => {
-    const city = req.params.city.toString();
-    const limit = parseInt(req.query.limit as string, 10) || 3;
+    const city = req.params.city as string;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 3;
 
     const offers = await this.offerService.findPremiumByCity(city, limit);
-    const offersResponse = offers.map((offer) =>
-      plainToInstance(OfferResponseDto, offer.toObject(), {
-        excludeExtraneousValues: true,
+
+    const offersResponse = await Promise.all(
+      offers.map(async (offer) => {
+        const offerDto = plainToInstance(OfferResponseDto, offer.toObject(), {
+          excludeExtraneousValues: true,
+        });
+
+        const commentsCount = await this.commentService.countByOfferId(offer.id);
+        const averageRating = await this.commentService.getAverageRating(offer.id);
+
+        return {
+          ...offerDto,
+          commentsCount,
+          rating: averageRating || 0
+        };
       })
     );
 
@@ -133,29 +214,32 @@ export class OfferController extends BaseController {
 
   private getFavoriteOffers = asyncHandler(async (_req: Request, res: Response) => {
     const offers = await this.offerService.findFavorites();
-    const offersResponse = offers.map((offer) =>
-      plainToInstance(OfferResponseDto, offer.toObject(), {
-        excludeExtraneousValues: true,
+
+    const offersResponse = await Promise.all(
+      offers.map(async (offer) => {
+        const offerDto = plainToInstance(OfferResponseDto, offer.toObject(), {
+          excludeExtraneousValues: true,
+        });
+
+        const commentsCount = await this.commentService.countByOfferId(offer.id);
+        const averageRating = await this.commentService.getAverageRating(offer.id);
+
+        return {
+          ...offerDto,
+          commentsCount,
+          rating: averageRating || 0
+        };
       })
     );
-
 
     this.ok(res, offersResponse);
   });
 
   private addToFavorite = asyncHandler(async (req: Request, res: Response) => {
-    const offerId = req.params.id.toString();
+    const offerId = req.params.id as string;
     const offer = await this.offerService.toggleFavorite(offerId, true);
 
-    if (!offer) {
-      throw new HttpError(
-        StatusCodes.NOT_FOUND,
-        `Offer with id ${offerId} not found`,
-        { offerId }
-      );
-    }
-
-    const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
+    const offerResponse = plainToInstance(OfferResponseDto, offer?.toObject(), {
       excludeExtraneousValues: true,
     });
 
@@ -163,110 +247,121 @@ export class OfferController extends BaseController {
   });
 
   private removeFromFavorite = asyncHandler(async (req: Request, res: Response) => {
-    const offerId = req.params.id.toString();
+    const offerId = req.params.id as string;
     const offer = await this.offerService.toggleFavorite(offerId, false);
 
-    if (!offer) {
-      throw new HttpError(
-        StatusCodes.NOT_FOUND,
-        `Offer with id ${offerId} not found`,
-        { offerId }
-      );
-    }
-
-    const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
+    const offerResponse = plainToInstance(OfferResponseDto, offer?.toObject(), {
       excludeExtraneousValues: true,
     });
 
     this.ok(res, offerResponse);
+  });
+
+  private getOfferComments = asyncHandler(async (req: Request, res: Response) => {
+    const offerId = req.params.id as string;
+    const comments = await this.commentService.findByOfferId(offerId);
+
+    this.ok(res, comments);
   });
 
   private createOffer = asyncHandler(async (req: Request, res: Response) => {
-    const { title, description, city, previewImage, images, isPremium, type, bedrooms, maxAdults, price, goods, hostId, location } = req.body;
+    const dto = req.body as CreateOfferDto;
 
-    // Проверяем обязательные поля
-    if (!title || !description || !city || !previewImage || !type || !bedrooms || !maxAdults || !price || !hostId || !location) {
-      const missingFields = {
-        title: !title,
-        description: !description,
-        city: !city,
-        previewImage: !previewImage,
-        type: !type,
-        bedrooms: !bedrooms,
-        maxAdults: !maxAdults,
-        price: !price,
-        hostId: !hostId,
-        location: !location
-      };
-
+    if (!dto.host) {
       throw new HttpError(
         StatusCodes.BAD_REQUEST,
-        'Missing required fields for offer creation',
-        { missingFields }
+        'Host ID is required for offer creation'
       );
     }
 
-    const createOfferDto = Object.assign(new CreateOfferDto(), {
-      title,
-      description,
-      postDate: new Date(),
-      city,
-      previewImage,
-      images: images || [],
-      isPremium: Boolean(isPremium),
-      isFavorite: false,
-      rating: 0,
-      type,
-      rooms: Number(bedrooms),
-      guests: Number(maxAdults),
-      price: Number(price),
-      conveniences: goods || [],
-      host: hostId,
-      location
-    });
-
-    const offer = await this.offerService.create(createOfferDto);
+    const offer = await this.offerService.create(dto);
 
     const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
       excludeExtraneousValues: true,
     });
 
-    this.created(res, offerResponse);
+    this.created(res, {
+      ...offerResponse,
+      commentsCount: 0,
+      rating: 0
+    });
   });
 
   private updateOffer = asyncHandler(async (req: Request, res: Response) => {
-    const offerId = req.params.id.toString();
+    const offerId = req.params.id as string;
+    const dto = req.body as UpdateOfferDto;
 
-    const updateOfferDto = Object.assign(new UpdateOfferDto(), req.body);
-    const offer = await this.offerService.updateById(offerId, updateOfferDto);
+    const offer = await this.offerService.updateById(offerId, dto);
 
-    if (!offer) {
-      throw new HttpError(
-        StatusCodes.NOT_FOUND,
-        `Offer with id ${offerId} not found`,
-        { offerId }
-      );
-    }
-
-    const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
+    const offerResponse = plainToInstance(OfferResponseDto, offer?.toObject(), {
       excludeExtraneousValues: true,
     });
 
-    this.ok(res, offerResponse);
+    // Добавляем актуальную статистику комментариев
+    const commentsCount = await this.commentService.countByOfferId(offerId);
+    const averageRating = await this.commentService.getAverageRating(offerId);
+
+    this.ok(res, {
+      ...offerResponse,
+      commentsCount,
+      rating: averageRating || 0
+    });
   });
 
   private deleteOffer = asyncHandler(async (req: Request, res: Response) => {
-    const offerId = req.params.id.toString();
-    const offer = await this.offerService.deleteById(offerId);
+    const offerId = req.params.id as string;
+
+    // Сначала удаляем все комментарии к предложению
+    await this.commentService.deleteByOfferId(offerId);
+
+    // Затем удаляем само предложение
+    await this.offerService.deleteById(offerId);
+
+    this.noContent(res);
+  });
+
+  // Добавить метод uploadImages
+  private uploadImages = asyncHandler(async (req: Request, res: Response) => {
+    const offerId = req.params.id as string;
+    const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
+      throw new HttpError(
+        StatusCodes.BAD_REQUEST,
+        'No images uploaded'
+      );
+    }
+
+    // Формируем URLs для загруженных изображений
+    const imageUrls = files.map((file) => `/static/${file.filename}`);
+
+    // Получаем текущее предложение
+    const offer = await this.offerService.findById(offerId);
 
     if (!offer) {
       throw new HttpError(
         StatusCodes.NOT_FOUND,
-        `Offer with id ${offerId} not found`,
-        { offerId }
+        `Offer with id ${offerId} not found`
       );
     }
 
-    this.noContent<void>(res, undefined as void);
+    // Добавляем новые изображения к существующим
+    const updatedImages = [...offer.images, ...imageUrls];
+
+    // Обновляем предложение
+    const updatedOffer = await this.offerService.updateById(offerId, {
+      images: updatedImages
+    });
+
+    const offerResponse = plainToInstance(OfferResponseDto, updatedOffer?.toObject(), {
+      excludeExtraneousValues: true,
+    });
+
+    this.ok(res, {
+      success: true,
+      offer: offerResponse,
+      uploadedImages: imageUrls,
+      message: `${files.length} image(s) uploaded successfully`
+    });
   });
 }

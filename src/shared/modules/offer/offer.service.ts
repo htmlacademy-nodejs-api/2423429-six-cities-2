@@ -15,10 +15,6 @@ export class DefaultOfferService implements OfferService {
   ) {}
 
   public async create(dto: CreateOfferDto): Promise<DocumentType<OfferEntity>> {
-  // dto.city теперь string, а не City enum
-  // dto.type теперь string, а не HousingType enum
-  // dto.conveniences теперь string[], а не Convenience[]
-  // dto.host теперь string, а не Ref<UserEntity>
 
     const result = await this.offerModel.create({
       ...dto,
@@ -151,22 +147,22 @@ export class DefaultOfferService implements OfferService {
 
   public async updateOfferStats(
     offerId: string,
-    stats: { rating?: number; commentCount?: number } // делаем поля опциональными
+    stats: { rating?: number; commentCount?: number }
   ): Promise<void> {
-  // Используем тип Partial для обновления только нужных полей
+
     const updateData: Partial<Pick<OfferEntity, 'rating' | 'commentsCount'>> = {};
 
-    // Обновляем рейтинг, если передан
+
     if (stats.rating !== undefined) {
       updateData.rating = stats.rating;
     }
 
-    // Обновляем счётчик комментариев, если передан
+
     if (stats.commentCount !== undefined) {
       updateData.commentsCount = stats.commentCount;
     }
 
-    // Если обновлять нечего, выходим
+
     if (Object.keys(updateData).length === 0) {
       this.logger.debug(`No stats to update for offer ${offerId}`);
       return;

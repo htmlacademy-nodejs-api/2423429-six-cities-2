@@ -1,4 +1,3 @@
-// src/cli/commands/import.command.ts
 import { Command } from './command.interface.js';
 import { TSVFileReader } from '../../shared/libs/file-reader/tsv-file-reader.js';
 import { createOffer, getErrorMessage, getMongoURI } from '../../shared/helpers/index.js';
@@ -9,6 +8,8 @@ import { MongoDatabaseClient } from '../../shared/libs/database-client/mongo.dat
 import { DEFAULT_DB_PORT, DEFAULT_USER_PASSWORD } from './commands.constant.js';
 import chalk from 'chalk';
 import { Offer } from '../../shared/helpers/index.js';
+import { DocumentType } from '@typegoose/typegoose';
+import { UserEntity } from '../../shared/modules/user/user.entity.js';
 
 export class ImportCommand implements Command {
   private userService: DefaultUserService;
@@ -48,37 +49,45 @@ export class ImportCommand implements Command {
   }
 
   private async saveOffer(offerData: Offer): Promise<void> {
-    // 1. Find or create user (offerData has host field)
-    const user = await this.userService.findOrCreate({
-      name: offerData.host.name,
-      email: offerData.host.email,
-      password: DEFAULT_USER_PASSWORD, // Use default password for security
-      type: offerData.host.type,
-      avatar: offerData.host.avatar || 'default-avatar.jpg'
-    }, this.salt);
+    try {
+      // 1. Find or create user using the new method
+      const user = await this.userService.findOrCreate({
+        name: offerData.host.name,
+        email: offerData.host.email,
+        password: DEFAULT_USER_PASSWORD,
+        type: offerData.host.type,
+        avatar: offerData.host.avatar || 'default-avatar.jpg'
+      }, this.salt);
 
-    // 2. Create offer
-    const offerDto = {
-      title: offerData.title,
-      description: offerData.description,
-      postDate: offerData.postDate || new Date(),
-      city: offerData.city,
-      previewImage: offerData.previewImage,
-      images: offerData.images || [],
-      isPremium: offerData.isPremium || false,
-      isFavorite: false, // Default not favorite
-      rating: offerData.rating || 0,
-      type: offerData.type,
-      rooms: offerData.rooms || 1,
-      guests: offerData.guests || 1,
-      price: offerData.price || 100,
-      conveniences: offerData.conveniences || [],
-      host: user.id, // Use the created/found user ID
-      commentsCount: offerData.commentsCount || 0,
-      location: offerData.location
-    };
+      // Получаем ID пользователя (MongoDB использует _id)
+      const userId = user._id.toString();
 
-    await this.offerService.create(offerDto);
+      // 2. Create offer
+      const offerDto = {
+        title: offerData.title,
+        description: offerData.description,
+        postDate: offerData.postDate || new Date(),
+        city: offerData.city,
+        previewImage: offerData.previewImage,
+        images: offerData.images || [],
+        isPremium: offerData.isPremium || false,
+        isFavorite: false,
+        rating: offerData.rating || 0,
+        type: offerData.type,
+        rooms: offerData.rooms || 1,
+        guests: offerData.guests || 1,
+        price: offerData.price || 100,
+        conveniences: offerData.conveniences || [],
+        host: userId, // Используем _id пользователя
+        commentsCount: offerData.commentsCount || 0,
+        location: offerData.location
+      };
+
+      await this.offerService.create(offerDto);
+    } catch (error) {
+      console.error(chalk.red(`  Error saving offer: ${getErrorMessage(error)}`));
+      throw error;
+    }
   }
 
   public getName(): string {
@@ -86,7 +95,6 @@ export class ImportCommand implements Command {
   }
 
   public async execute(...parameters: string[]): Promise<void> {
-    // Check parameter count
     if (parameters.length < 6) {
       console.error(chalk.red('❌ Not enough parameters!'));
       console.error(chalk.yellow('Usage:'));
@@ -103,25 +111,18 @@ export class ImportCommand implements Command {
       console.log(chalk.gray(`  File: ${filename}`));
       console.log(chalk.gray(`  Database: ${host}/${dbname}`));
 
-      // Get MongoDB connection URI
       const uri = getMongoURI(login, password, host, DEFAULT_DB_PORT, dbname);
-
-      // Set salt for password hashing
       this.salt = salt;
 
-      // Connect to database
       console.log(chalk.blue('  Connecting to database...'));
       await this.databaseClient.connect(uri);
       console.log(chalk.green('  ✅ Connected to database'));
 
-      // Create file reader
       const fileReader = new TSVFileReader(filename.trim());
 
-      // Handle events (pattern from demo: line + resolve)
       fileReader.on('line', this.onImportedLine);
       fileReader.on('end', this.onCompleteImport);
 
-      // Start reading file
       console.log(chalk.blue('  Reading file...'));
       await fileReader.read();
 
@@ -129,7 +130,6 @@ export class ImportCommand implements Command {
       console.error(chalk.red('\n❌ Import failed!'));
       console.error(chalk.red(`  Error: ${getErrorMessage(error)}`));
 
-      // Disconnect from database on error
       try {
         await this.databaseClient.disconnect();
       } catch (disconnectError) {
