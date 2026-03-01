@@ -8,8 +8,6 @@ import { MongoDatabaseClient } from '../../shared/libs/database-client/mongo.dat
 import { DEFAULT_DB_PORT, DEFAULT_USER_PASSWORD } from './commands.constant.js';
 import chalk from 'chalk';
 import { Offer } from '../../shared/helpers/index.js';
-import { DocumentType } from '@typegoose/typegoose';
-import { UserEntity } from '../../shared/modules/user/user.entity.js';
 
 export class ImportCommand implements Command {
   private userService: DefaultUserService;

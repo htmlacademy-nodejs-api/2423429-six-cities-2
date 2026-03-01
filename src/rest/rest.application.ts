@@ -40,6 +40,10 @@ export class RestApplication {
   private _initMiddleware() {
     this.server.use(express.json());
     this.logger.info('Middleware initialized');
+    this.server.use(
+      '/static',
+      express.static(this.config.get('UPLOAD_DIRECTORY'))
+    );
   }
 
   private _initControllers() {
