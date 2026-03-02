@@ -21,4 +21,7 @@ export const Component = {
 
   //Exception Filter
   ExceptionFilter: Symbol.for('ExceptionFilter'),
+
+  //authService
+  AuthService: Symbol.for('AuthService'),
 } as const;

@@ -1,0 +1,48 @@
+### ========================================
+### ТЕСТИРОВАНИЕ JWT АВТОРИЗАЦИИ
+### ========================================
+
+@baseUrl = http://localhost:3000
+
+### ========================================
+### 1. РЕГИСТРАЦИЯ НОВОГО ПОЛЬЗОВАТЕЛЯ
+### ========================================
+# @name register
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "JWT Test User",
+  "email": "jwt-test-1772437341@example.com",
+  "password": "123456",
+  "type": "common"
+}
+
+###
+
+### ========================================
+### 2. ВХОД В СИСТЕМУ (получение JWT токена)
+### ========================================
+# @name login
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "jwt-test-1772437341@example.com",
+  "password": "123456"
+}
+
+###
+
+### ========================================
+### 3. СОХРАНЯЕМ ТОКЕН И ID (ВЫПОЛНИТЕ ВРУЧНУЮ)
+### ========================================
+# После выполнения запроса №2, скопируйте:
+# - token из ответа и вставьте вместо <your_token>
+# - user._id из ответа и вставьте вместо <user_id>
+
+@authToken = <eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OWE1M2Y1ZDEzYWY0MTIxNTYxNzg2OTQiLCJlbWFpbCI6Imp3dC10ZXN0LTE3NzI0MzczNDFAZXhhbXBsZS5jb20iLCJuYW1lIjoiSldUIFRlc3QgVXNlciIsInR5cGUiOiJjb21tb24iLCJpYXQiOjE3NzI0Mzc2NDksImV4cCI6MTc3MjYxMDQ0OX0.ysqgHRZVBheurVlwQRfHJD0rm1ob9XgRpBSZcD8t16A>
+@userId = <69a53f5d13af412156178694>
+
+###
+

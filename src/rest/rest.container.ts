@@ -6,6 +6,8 @@ import { Config, RestConfig, RestSchema } from '../shared/libs/config/index.js';
 import { DatabaseClient, MongoDatabaseClient } from '../shared/libs/database-client/index.js';
 import { AppExceptionFilter } from '../shared/libs/rest/exception-filter/app-exception-filter.js';
 import { ExceptionFilter } from '../shared/libs/rest/exception-filter/exception-filter.interface.js';
+import { AuthService } from '../shared/modules/auth/auth-service.interface.js';
+import { JWTAuthService } from '../shared/modules/auth/jwt-auth.service.js';
 
 export function createRestApplicationContainer() {
   const restApplicationContainer = new Container();
@@ -15,6 +17,7 @@ export function createRestApplicationContainer() {
   restApplicationContainer.bind<Config<RestSchema>>(Component.Config).to(RestConfig).inSingletonScope();
   restApplicationContainer.bind<DatabaseClient>(Component.DatabaseClient).to(MongoDatabaseClient).inSingletonScope();
   restApplicationContainer.bind<ExceptionFilter>(Component.ExceptionFilter).to(AppExceptionFilter).inSingletonScope();
+  restApplicationContainer.bind<AuthService>(Component.AuthService).to(JWTAuthService).inSingletonScope();
 
   return restApplicationContainer;
 }

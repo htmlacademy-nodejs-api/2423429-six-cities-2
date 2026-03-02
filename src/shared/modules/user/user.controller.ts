@@ -19,13 +19,15 @@ import { DocumentExistsMiddleware } from '../../libs/rest/middleware/document-ex
 import { UploadFileMiddleware } from '../../libs/rest/middleware/upload-file.middleware.js';
 import { unlink } from 'node:fs/promises';
 import { join } from 'node:path';
+import { AuthService } from '../auth/auth-service.interface.js'; // Импортируем AuthService
 
 @injectable()
 export class UserController extends BaseController {
   constructor(
     @inject(Component.Logger) protected readonly logger: Logger,
     @inject(Component.UserService) private readonly userService: UserService,
-    @inject(Component.Config) private readonly config: Config<RestSchema>
+    @inject(Component.Config) private readonly config: Config<RestSchema>,
+    @inject(Component.AuthService) private readonly authService: AuthService // Добавляем AuthService
   ) {
     super(logger);
 
@@ -60,7 +62,6 @@ export class UserController extends BaseController {
       ]
     });
 
-    // Добавим возможность удаления аватара
     this.addRoute({
       path: '/users/:userId/avatar',
       method: HttpMethod.Delete,
@@ -119,13 +120,21 @@ export class UserController extends BaseController {
       );
     }
 
+    // Генерируем JWT токен через AuthService
+    const token = await this.authService.authenticate(
+      user._id.toString(),
+      user.email,
+      user.name,
+      user.type
+    );
+
     const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
       excludeExtraneousValues: true,
     });
 
     this.ok(res, {
       user: userResponse,
-      token: 'jwt-token-will-be-added-later'
+      token: token // Теперь здесь реальный JWT токен
     });
   });
 
@@ -140,7 +149,6 @@ export class UserController extends BaseController {
       );
     }
 
-    // Получаем текущего пользователя (уже проверен middleware)
     const user = await this.userService.findById(userId);
 
     if (!user) {
@@ -184,7 +192,6 @@ export class UserController extends BaseController {
   private deleteAvatar = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.params.userId as string;
 
-    // Получаем пользователя (уже проверен middleware)
     const user = await this.userService.findById(userId);
 
     if (!user) {
