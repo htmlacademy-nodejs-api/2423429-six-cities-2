@@ -13,7 +13,7 @@ Content-Type: application/json
 
 {
   "name": "JWT Test User",
-  "email": "jwt-test-1772437341@example.com",
+  "email": "jwt-test-{{$timestamp}}@example.com",
   "password": "123456",
   "type": "common"
 }
@@ -28,21 +28,97 @@ POST {{baseUrl}}/users/login
 Content-Type: application/json
 
 {
-  "email": "jwt-test-1772437341@example.com",
+  "email": "jwt-test-{{$timestamp}}@example.com",
   "password": "123456"
 }
 
 ###
 
 ### ========================================
-### 3. СОХРАНЯЕМ ТОКЕН И ID (ВЫПОЛНИТЕ ВРУЧНУЮ)
+### 3. СОХРАНЯЕМ ТОКЕН (скопируйте из ответа выше)
 ### ========================================
-# После выполнения запроса №2, скопируйте:
-# - token из ответа и вставьте вместо <your_token>
-# - user._id из ответа и вставьте вместо <user_id>
-
-@authToken = <eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OWE1M2Y1ZDEzYWY0MTIxNTYxNzg2OTQiLCJlbWFpbCI6Imp3dC10ZXN0LTE3NzI0MzczNDFAZXhhbXBsZS5jb20iLCJuYW1lIjoiSldUIFRlc3QgVXNlciIsInR5cGUiOiJjb21tb24iLCJpYXQiOjE3NzI0Mzc2NDksImV4cCI6MTc3MjYxMDQ0OX0.ysqgHRZVBheurVlwQRfHJD0rm1ob9XgRpBSZcD8t16A>
-@userId = <69a53f5d13af412156178694>
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ###
 
+### ========================================
+### 4. ЗАГРУЗКА АВАТАРА (требуется авторизация)
+### ========================================
+POST {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="avatar"; filename="test-avatar.jpg"
+Content-Type: image/jpeg
+
+< ./mocks/test-avatar.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### ========================================
+### 5. УДАЛЕНИЕ АВАТАРА (требуется авторизация)
+### ========================================
+DELETE {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
+
+###
+
+### ========================================
+### 6. СОЗДАНИЕ ПРЕДЛОЖЕНИЯ (требуется авторизация)
+### ========================================
+POST {{baseUrl}}/offers
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Тестовое предложение",
+  "description": "Описание тестового предложения",
+  "city": "Paris",
+  "previewImage": "preview.jpg",
+  "images": ["image1.jpg", "image2.jpg", "image3.jpg"],
+  "isPremium": false,
+  "type": "apartment",
+  "bedrooms": 2,
+  "maxAdults": 3,
+  "price": 100,
+  "goods": ["Wi-Fi", "Kitchen", "Heating"],
+  "location": {
+    "latitude": 48.85661,
+    "longitude": 2.351499
+  }
+}
+
+###
+
+### ========================================
+### 7. ПОЛУЧЕНИЕ СПИСКА ПРЕДЛОЖЕНИЙ (публичный)
+### ========================================
+GET {{baseUrl}}/offers
+
+###
+
+### ========================================
+### 8. ПОПЫТКА СОЗДАНИЯ ПРЕДЛОЖЕНИЯ БЕЗ ТОКЕНА (должна вернуть 401)
+### ========================================
+POST {{baseUrl}}/offers
+Content-Type: application/json
+
+{
+  "title": "Это предложение не должно создаться",
+  "description": "Описание без авторизации",
+  "city": "Paris",
+  "previewImage": "preview.jpg",
+  "images": ["image1.jpg", "image2.jpg", "image3.jpg"],
+  "isPremium": false,
+  "type": "apartment",
+  "bedrooms": 2,
+  "maxAdults": 3,
+  "price": 100,
+  "goods": ["Wi-Fi", "Kitchen"],
+  "location": {
+    "latitude": 48.85661,
+    "longitude": 2.351499
+  }
+}

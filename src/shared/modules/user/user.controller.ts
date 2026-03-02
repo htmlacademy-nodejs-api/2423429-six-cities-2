@@ -14,12 +14,12 @@ import { Config, RestSchema } from '../../libs/config/index.js';
 import { HttpError } from '../../libs/rest/errors/http-error.js';
 import { StatusCodes } from 'http-status-codes';
 import { ValidateDtoMiddleware } from '../../libs/rest/middleware/validate-dto.middleware.js';
-import { ValidateObjectIdMiddleware } from '../../libs/rest/middleware/validate-objectid.middleware.js';
-import { DocumentExistsMiddleware } from '../../libs/rest/middleware/document-exists.middleware.js';
 import { UploadFileMiddleware } from '../../libs/rest/middleware/upload-file.middleware.js';
+import { PrivateRouteMiddleware } from '../../libs/rest/middleware/private-route.middleware.js'; // Добавляем импорт
 import { unlink } from 'node:fs/promises';
 import { join } from 'node:path';
-import { AuthService } from '../auth/auth-service.interface.js'; // Импортируем AuthService
+import { AuthService } from '../auth/auth-service.interface.js';
+import '../../types/request.type.js';
 
 @injectable()
 export class UserController extends BaseController {
@@ -27,12 +27,14 @@ export class UserController extends BaseController {
     @inject(Component.Logger) protected readonly logger: Logger,
     @inject(Component.UserService) private readonly userService: UserService,
     @inject(Component.Config) private readonly config: Config<RestSchema>,
-    @inject(Component.AuthService) private readonly authService: AuthService // Добавляем AuthService
+    @inject(Component.AuthService) private readonly authService: AuthService,
+    @inject(Component.PrivateRouteMiddleware) private readonly privateRouteMiddleware: PrivateRouteMiddleware // Добавляем
   ) {
     super(logger);
 
     this.logger.info('UserController initialized');
 
+    // Публичные маршруты
     this.addRoute({
       path: '/users',
       method: HttpMethod.Post,
@@ -47,13 +49,14 @@ export class UserController extends BaseController {
       middlewares: [new ValidateDtoMiddleware(loginUserSchema)]
     });
 
+    // Приватные маршруты для аватара (требуют авторизации)
+    // Убрали :userId из URL, теперь ID берется из токена
     this.addRoute({
-      path: '/users/:userId/avatar',
+      path: '/users/avatar',
       method: HttpMethod.Post,
       handler: this.uploadAvatar,
       middlewares: [
-        new ValidateObjectIdMiddleware('userId'),
-        new DocumentExistsMiddleware(this.userService, 'User', 'userId'),
+        this.privateRouteMiddleware, // Проверяем авторизацию
         new UploadFileMiddleware(
           this.config.get('UPLOAD_DIRECTORY'),
           'avatar',
@@ -63,12 +66,11 @@ export class UserController extends BaseController {
     });
 
     this.addRoute({
-      path: '/users/:userId/avatar',
+      path: '/users/avatar',
       method: HttpMethod.Delete,
       handler: this.deleteAvatar,
       middlewares: [
-        new ValidateObjectIdMiddleware('userId'),
-        new DocumentExistsMiddleware(this.userService, 'User', 'userId')
+        this.privateRouteMiddleware // Проверяем авторизацию
       ]
     });
   }
@@ -134,13 +136,22 @@ export class UserController extends BaseController {
 
     this.ok(res, {
       user: userResponse,
-      token: token // Теперь здесь реальный JWT токен
+      token: token
     });
   });
 
   private uploadAvatar = asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.params.userId as string;
+    // Получаем userId из токена (благодаря PrivateRouteMiddleware)
+    const userId = req.user?.userId;
     const file = req.file;
+
+    if (!userId) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authenticated',
+        'UserController'
+      );
+    }
 
     if (!file) {
       throw new HttpError(
@@ -150,7 +161,6 @@ export class UserController extends BaseController {
     }
 
     const user = await this.userService.findById(userId);
-
     if (!user) {
       throw new HttpError(
         StatusCodes.NOT_FOUND,
@@ -190,10 +200,18 @@ export class UserController extends BaseController {
   });
 
   private deleteAvatar = asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.params.userId as string;
+    // Получаем userId из токена (благодаря PrivateRouteMiddleware)
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authenticated',
+        'UserController'
+      );
+    }
 
     const user = await this.userService.findById(userId);
-
     if (!user) {
       throw new HttpError(
         StatusCodes.NOT_FOUND,
