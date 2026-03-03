@@ -5,44 +5,29 @@
 @baseUrl = http://localhost:3000
 
 ### ========================================
-### 1. РЕГИСТРАЦИЯ НОВОГО ПОЛЬЗОВАТЕЛЯ
+### 1. ВХОД В СИСТЕМУ (получение JWT токена)
 ### ========================================
-# @name register
-POST {{baseUrl}}/users
-Content-Type: application/json
-
-{
-  "name": "JWT Test User",
-  "email": "jwt-test-{{$timestamp}}@example.com",
-  "password": "123456",
-  "type": "common"
-}
-
-###
-
-### ========================================
-### 2. ВХОД В СИСТЕМУ (получение JWT токена)
-### ========================================
+# Используем существующего пользователя из user.http
 # @name login
 POST {{baseUrl}}/users/login
 Content-Type: application/json
 
 {
-  "email": "jwt-test-{{$timestamp}}@example.com",
+  "email": "john@example.com",
   "password": "123456"
 }
 
 ###
 
 ### ========================================
-### 3. СОХРАНЯЕМ ТОКЕН (скопируйте из ответа выше)
+### 2. СОХРАНЯЕМ ТОКЕН (скопируйте из ответа выше)
 ### ========================================
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+@authToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OThkZWI4NDE4MDMyZTU3MDNmZDE1ZGYiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJuYW1lIjoiSm9obiBEb2UiLCJ0eXBlIjoiY29tbW9uIiwiaWF0IjoxNzcyNTQzMDIyLCJleHAiOjE3NzI3MTU4MjJ9.EEr9gn4kNbkF9cV5N9L4Y4k0wDuePSs0fMj2yVbVkqo
 
 ###
 
 ### ========================================
-### 4. ЗАГРУЗКА АВАТАРА (требуется авторизация)
+### 3. ЗАГРУЗКА АВАТАРА (требуется авторизация)
 ### ========================================
 POST {{baseUrl}}/users/avatar
 Authorization: Bearer {{authToken}}
@@ -58,7 +43,7 @@ Content-Type: image/jpeg
 ###
 
 ### ========================================
-### 5. УДАЛЕНИЕ АВАТАРА (требуется авторизация)
+### 4. УДАЛЕНИЕ АВАТАРА (требуется авторизация)
 ### ========================================
 DELETE {{baseUrl}}/users/avatar
 Authorization: Bearer {{authToken}}
@@ -66,59 +51,6 @@ Authorization: Bearer {{authToken}}
 ###
 
 ### ========================================
-### 6. СОЗДАНИЕ ПРЕДЛОЖЕНИЯ (требуется авторизация)
+### 5. ПОПЫТКА ДОСТУПА БЕЗ ТОКЕНА (должна вернуть 401)
 ### ========================================
-POST {{baseUrl}}/offers
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-  "title": "Тестовое предложение",
-  "description": "Описание тестового предложения",
-  "city": "Paris",
-  "previewImage": "preview.jpg",
-  "images": ["image1.jpg", "image2.jpg", "image3.jpg"],
-  "isPremium": false,
-  "type": "apartment",
-  "bedrooms": 2,
-  "maxAdults": 3,
-  "price": 100,
-  "goods": ["Wi-Fi", "Kitchen", "Heating"],
-  "location": {
-    "latitude": 48.85661,
-    "longitude": 2.351499
-  }
-}
-
-###
-
-### ========================================
-### 7. ПОЛУЧЕНИЕ СПИСКА ПРЕДЛОЖЕНИЙ (публичный)
-### ========================================
-GET {{baseUrl}}/offers
-
-###
-
-### ========================================
-### 8. ПОПЫТКА СОЗДАНИЯ ПРЕДЛОЖЕНИЯ БЕЗ ТОКЕНА (должна вернуть 401)
-### ========================================
-POST {{baseUrl}}/offers
-Content-Type: application/json
-
-{
-  "title": "Это предложение не должно создаться",
-  "description": "Описание без авторизации",
-  "city": "Paris",
-  "previewImage": "preview.jpg",
-  "images": ["image1.jpg", "image2.jpg", "image3.jpg"],
-  "isPremium": false,
-  "type": "apartment",
-  "bedrooms": 2,
-  "maxAdults": 3,
-  "price": 100,
-  "goods": ["Wi-Fi", "Kitchen"],
-  "location": {
-    "latitude": 48.85661,
-    "longitude": 2.351499
-  }
-}
+DELETE {{baseUrl}}/users/avatar

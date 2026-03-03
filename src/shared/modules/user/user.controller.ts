@@ -15,7 +15,7 @@ import { HttpError } from '../../libs/rest/errors/http-error.js';
 import { StatusCodes } from 'http-status-codes';
 import { ValidateDtoMiddleware } from '../../libs/rest/middleware/validate-dto.middleware.js';
 import { UploadFileMiddleware } from '../../libs/rest/middleware/upload-file.middleware.js';
-import { PrivateRouteMiddleware } from '../../libs/rest/middleware/private-route.middleware.js'; // Добавляем импорт
+import { PrivateRouteMiddleware } from '../../libs/rest/middleware/private-route.middleware.js';
 import { unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { AuthService } from '../auth/auth-service.interface.js';
@@ -28,7 +28,7 @@ export class UserController extends BaseController {
     @inject(Component.UserService) private readonly userService: UserService,
     @inject(Component.Config) private readonly config: Config<RestSchema>,
     @inject(Component.AuthService) private readonly authService: AuthService,
-    @inject(Component.PrivateRouteMiddleware) private readonly privateRouteMiddleware: PrivateRouteMiddleware // Добавляем
+    @inject(Component.PrivateRouteMiddleware) private readonly privateRouteMiddleware: PrivateRouteMiddleware
   ) {
     super(logger);
 
@@ -50,13 +50,12 @@ export class UserController extends BaseController {
     });
 
     // Приватные маршруты для аватара (требуют авторизации)
-    // Убрали :userId из URL, теперь ID берется из токена
     this.addRoute({
       path: '/users/avatar',
       method: HttpMethod.Post,
       handler: this.uploadAvatar,
       middlewares: [
-        this.privateRouteMiddleware, // Проверяем авторизацию
+        this.privateRouteMiddleware,
         new UploadFileMiddleware(
           this.config.get('UPLOAD_DIRECTORY'),
           'avatar',
@@ -70,7 +69,7 @@ export class UserController extends BaseController {
       method: HttpMethod.Delete,
       handler: this.deleteAvatar,
       middlewares: [
-        this.privateRouteMiddleware // Проверяем авторизацию
+        this.privateRouteMiddleware
       ]
     });
   }
@@ -141,7 +140,7 @@ export class UserController extends BaseController {
   });
 
   private uploadAvatar = asyncHandler(async (req: Request, res: Response) => {
-    // Получаем userId из токена (благодаря PrivateRouteMiddleware)
+    // Получаем userId из токена
     const userId = req.user?.userId;
     const file = req.file;
 
@@ -168,8 +167,8 @@ export class UserController extends BaseController {
       );
     }
 
-    // Если у пользователя уже был аватар - удаляем старый файл
-    if (user.avatar) {
+    // Если у пользователя уже был аватар и он не дефолтный - удаляем старый файл
+    if (user.avatar && user.avatar !== 'default-avatar.jpg') {
       try {
         const oldFileName = user.avatar.replace('/static/', '');
         const oldFilePath = join(process.cwd(), this.config.get('UPLOAD_DIRECTORY'), oldFileName);
@@ -200,7 +199,7 @@ export class UserController extends BaseController {
   });
 
   private deleteAvatar = asyncHandler(async (req: Request, res: Response) => {
-    // Получаем userId из токена (благодаря PrivateRouteMiddleware)
+    // Получаем userId из токена
     const userId = req.user?.userId;
 
     if (!userId) {
@@ -219,8 +218,8 @@ export class UserController extends BaseController {
       );
     }
 
-    // Если есть аватар - удаляем файл
-    if (user.avatar) {
+    // Если есть аватар и он не дефолтный - удаляем файл
+    if (user.avatar && user.avatar !== 'default-avatar.jpg') {
       try {
         const fileName = user.avatar.replace('/static/', '');
         const filePath = join(process.cwd(), this.config.get('UPLOAD_DIRECTORY'), fileName);
@@ -231,8 +230,8 @@ export class UserController extends BaseController {
       }
     }
 
-    // Убираем аватар у пользователя
-    user.avatar = '';
+    // Возвращаем дефолтный аватар вместо пустой строки
+    user.avatar = 'default-avatar.jpg';
     await user.save();
 
     const userResponse = plainToInstance(UserResponseDto, user.toObject(), {

@@ -18,8 +18,11 @@ export class UserEntity extends defaultClasses.TimeStamps implements UserInterfa
   @prop({ required: true, unique: true })
   public email!: string;
 
-  @prop({ required: true, default: 'default-avatar.jpg' })
-  public avatar!: string;
+  @prop({
+    required: true,
+    default: 'default-avatar.jpg'
+  })
+  public avatar!: string; // Оставляем обязательным, но с default
 
   @prop({ required: true })
   public password!: string;

@@ -75,7 +75,7 @@ export class ImportCommand implements Command {
         rooms: offerData.rooms || 1,
         guests: offerData.guests || 1,
         price: offerData.price || 100,
-        conveniences: offerData.conveniences || [],
+        goods: offerData.conveniences || [],
         host: userId, // Используем _id пользователя
         commentsCount: offerData.commentsCount || 0,
         location: offerData.location
