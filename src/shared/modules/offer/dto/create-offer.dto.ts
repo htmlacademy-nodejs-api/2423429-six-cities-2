@@ -50,7 +50,7 @@ export class CreateOfferDto {
   public goods!: string[];
 
   @Expose()
-  public host!: string;
+  public host?: string;
 
   @Expose()
   public location!: {
@@ -185,10 +185,9 @@ export const createOfferSchema = Joi.object({
 
   host: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/)
-    .required()
+    .optional()
     .messages({
-      'string.pattern.base': 'Host ID must be a valid MongoDB ObjectId',
-      'any.required': 'Host ID is required'
+      'string.pattern.base': 'Host ID must be a valid MongoDB ObjectId'
     }),
 
   location: Joi.object({
