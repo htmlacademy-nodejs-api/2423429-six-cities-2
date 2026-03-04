@@ -19,9 +19,9 @@ Content-Type: application/json
 ###
 
 ### ========================================
-### 2. SAVE TOKEN
+### 2. SAVE TOKEN (copy from response above)
 ### ========================================
-@authToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OThkZWI4NDE4MDMyZTU3MDNmZDE1ZGYiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJuYW1lIjoiSm9obiBEb2UiLCJ0eXBlIjoiY29tbW9uIiwiaWF0IjoxNzcyNTQzNjA4LCJleHAiOjE3NzI3MTY0MDh9.bir0opNZ4mKPjRu6pynGrg0x7CH2i53NMLYk4W2UaPA
+@authToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OThkZWI4NDE4MDMyZTU3MDNmZDE1ZGYiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJuYW1lIjoiSm9obiBEb2UiLCJ0eXBlIjoiY29tbW9uIiwiaWF0IjoxNzcyNTQzMTkwLCJleHAiOjE3NzI3MTU5OTB9.349_FteVrsrWnuw2_vfnr4WzA7AcqhqSg3NP8GjCFE4
 
 ###
 
@@ -53,11 +53,9 @@ Content-Type: application/json
   "goods": [
     "Breakfast",
     "Air conditioning",
-    "Laptop",
-    "friendly workspace",
+    "Laptop friendly workspace",
     "Fridge"
   ],
-  "host": "698deb8418032e5703fd15df",
   "location": {
     "latitude": 48.8566,
     "longitude": 2.3522
@@ -168,7 +166,6 @@ Content-Type: application/json
   "guests": 3,
   "price": 100,
   "goods": ["Breakfast"],
-  "host": "698deb8418032e5703fd15df",
   "location": {
     "latitude": 48.8566,
     "longitude": 2.3522
@@ -194,7 +191,6 @@ Content-Type: application/json
   "guests": 4,
   "price": 150,
   "goods": ["Breakfast"],
-  "host": "698deb8418032e5703fd15df",
   "location": {
     "latitude": 48.8566,
     "longitude": 2.3522
@@ -203,5 +199,24 @@ Content-Type: application/json
 
 ###
 
-### 15. GET NON-EXISTENT OFFER (should return 404)
+### 15. UPDATE OFFER BY NON-AUTHOR (should return 403)
+# Сначала создайте предложение от другого пользователя,
+# затем попробуйте обновить с токеном John Doe
+PATCH {{baseUrl}}/offers/ANOTHER_USER_OFFER_ID
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "price": 200
+}
+
+###
+
+### 16. DELETE OFFER BY NON-AUTHOR (should return 403)
+DELETE {{baseUrl}}/offers/ANOTHER_USER_OFFER_ID
+Authorization: Bearer {{authToken}}
+
+###
+
+### 17. GET NON-EXISTENT OFFER (should return 404)
 GET {{baseUrl}}/offers/000000000000000000000000

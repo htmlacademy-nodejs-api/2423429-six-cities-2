@@ -1,4 +1,3 @@
-// src/shared/modules/comment/comment.service.ts
 import { inject, injectable } from 'inversify';
 import { DocumentType, types } from '@typegoose/typegoose';
 import { CommentEntity } from './comment.entity.js';
@@ -21,14 +20,14 @@ export class DefaultCommentService implements CommentService {
     return this.offerService.exists(offerId);
   }
 
-  public async create(dto: CreateCommentDto): Promise<DocumentType<CommentEntity>> {
-    // Проверяем существование оффера
+  public async create(dto: CreateCommentDto & { userId: string; offerId: string }): Promise<DocumentType<CommentEntity>> {
+    // Check if offer exists
     const offerExists = await this.offerService.exists(dto.offerId);
     if (!offerExists) {
       throw new Error(`Offer with id ${dto.offerId} not found`);
     }
 
-    // Создаём комментарий
+    // Create comment
     const result = await this.commentModel.create({
       text: dto.text,
       rating: dto.rating,
@@ -38,14 +37,14 @@ export class DefaultCommentService implements CommentService {
 
     this.logger.info(`New comment created for offer ${dto.offerId} by user ${dto.userId}`);
 
-    // Увеличиваем счётчик комментариев
+    // Increment comment count
     await this.offerService.incrementCommentCount(dto.offerId);
 
-    // Пересчитываем и обновляем рейтинг
+    // Recalculate and update rating
     const averageRating = await this.getAverageRating(dto.offerId);
     await this.offerService.updateRating(dto.offerId, averageRating);
 
-    // Возвращаем комментарий с информацией об авторе
+    // Return comment with author info
     return result.populate('userId');
   }
 

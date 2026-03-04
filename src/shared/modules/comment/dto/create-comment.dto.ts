@@ -1,22 +1,14 @@
 import Joi from 'joi';
+import { Expose } from 'class-transformer';
 
 export class CreateCommentDto {
-  public text: string;
-  public rating: number;
-  public offerId: string;
-  public userId: string;
+  @Expose()
+  public text!: string;
 
-  constructor(
-    text: string,
-    rating: number,
-    offerId: string,
-    userId: string
-  ) {
-    this.text = text;
-    this.rating = rating;
-    this.offerId = offerId;
-    this.userId = userId;
-  }
+  @Expose()
+  public rating!: number;
+
+  // userId и offerId удалены - они будут браться из токена и URL
 }
 
 export const createCommentSchema = Joi.object({
@@ -41,13 +33,5 @@ export const createCommentSchema = Joi.object({
       'number.min': 'Minimum rating is 1',
       'number.max': 'Maximum rating is 5',
       'any.required': 'Rating is required'
-    }),
-
-  userId: Joi.string()
-    .pattern(/^[0-9a-fA-F]{24}$/)
-    .required()
-    .messages({
-      'string.pattern.base': 'User ID must be a valid MongoDB ObjectId',
-      'any.required': 'User ID is required'
     })
 });

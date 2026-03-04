@@ -1,4 +1,3 @@
-// src/shared/modules/comment/comment.controller.ts
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { injectable, inject } from 'inversify';
@@ -11,21 +10,24 @@ import { CreateCommentDto, createCommentSchema } from './dto/create-comment.dto.
 import { plainToInstance } from 'class-transformer';
 import { ValidateObjectIdMiddleware } from '../../libs/rest/middleware/validate-objectid.middleware.js';
 import { ValidateDtoMiddleware } from '../../libs/rest/middleware/validate-dto.middleware.js';
+import { PrivateRouteMiddleware } from '../../libs/rest/middleware/private-route.middleware.js';
 import { HttpError } from '../../libs/rest/errors/http-error.js';
 import { StatusCodes } from 'http-status-codes';
 import { CommentResponseDto } from './rdo/comment-response.rdo.js';
+import '../../types/request.type.js';
 
 @injectable()
 export class CommentController extends BaseController {
   constructor(
     @inject(Component.Logger) protected readonly logger: Logger,
-    @inject(Component.CommentService) private readonly commentService: CommentService
+    @inject(Component.CommentService) private readonly commentService: CommentService,
+    @inject(Component.PrivateRouteMiddleware) private readonly privateRouteMiddleware: PrivateRouteMiddleware
   ) {
     super(logger);
 
     console.log('CommentController initialized!!!');
 
-    // GET /offers/:offerId/comments - получить комментарии к предложению
+    // GET /offers/:offerId/comments - public (no auth required)
     this.addRoute({
       path: '/offers/:offerId/comments',
       method: HttpMethod.Get,
@@ -35,12 +37,13 @@ export class CommentController extends BaseController {
       ]
     });
 
-    // POST /offers/:offerId/comments - добавить комментарий
+    // POST /offers/:offerId/comments - private (auth required)
     this.addRoute({
       path: '/offers/:offerId/comments',
       method: HttpMethod.Post,
       handler: this.createComment,
       middlewares: [
+        this.privateRouteMiddleware,
         new ValidateObjectIdMiddleware('offerId'),
         new ValidateDtoMiddleware(createCommentSchema)
       ]
@@ -66,10 +69,19 @@ export class CommentController extends BaseController {
   private createComment = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.offerId as string;
     const dto = req.body as CreateCommentDto;
+    const userId = req.user?.userId;
 
     this.logger.info(`POST /offers/${offerId}/comments`);
 
-    // Проверяем существование предложения
+    if (!userId) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authenticated',
+        'CommentController'
+      );
+    }
+
+    // Check if offer exists
     const offerExists = await this.commentService.checkOfferExists(offerId);
     if (!offerExists) {
       throw new HttpError(
@@ -78,11 +90,11 @@ export class CommentController extends BaseController {
       );
     }
 
-    // Создаем комментарий - передаем один объект со всеми полями
+    // Create comment
     const comment = await this.commentService.create({
       text: dto.text,
       rating: dto.rating,
-      userId: dto.userId,
+      userId: userId,
       offerId: offerId
     });
 

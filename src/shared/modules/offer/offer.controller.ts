@@ -18,6 +18,9 @@ import { ValidateObjectIdMiddleware } from '../../libs/rest/middleware/validate-
 import { DocumentExistsMiddleware } from '../../libs/rest/middleware/document-exists.middleware.js';
 import { Config, RestSchema } from '../../libs/config/index.js';
 import { UploadFileMiddleware } from '../../libs/rest/middleware/upload-file.middleware.js';
+import { PrivateRouteMiddleware } from '../../libs/rest/middleware/private-route.middleware.js';
+import { FavoriteService } from '../favorite/favorite-service.interface.js';
+import '../../types/request.type.js';
 
 @injectable()
 export class OfferController extends BaseController {
@@ -25,56 +28,27 @@ export class OfferController extends BaseController {
     @inject(Component.Logger) protected readonly logger: Logger,
     @inject(Component.OfferService) private readonly offerService: OfferService,
     @inject(Component.CommentService) private readonly commentService: CommentService,
-     @inject(Component.Config) private readonly config: Config<RestSchema>,
+    @inject(Component.FavoriteService) private readonly favoriteService: FavoriteService,
+    @inject(Component.Config) private readonly config: Config<RestSchema>,
+    @inject(Component.PrivateRouteMiddleware) private readonly privateRouteMiddleware: PrivateRouteMiddleware
   ) {
     super(logger);
 
     this.logger.info('OfferController initialized');
 
-    // GET /offers - all offers
+    // PUBLIC ROUTES
     this.addRoute({
       path: '/offers',
       method: HttpMethod.Get,
       handler: this.getOffers,
     });
 
-    // GET /offers/premium/:city - premium offers by city
     this.addRoute({
       path: '/offers/premium/:city',
       method: HttpMethod.Get,
       handler: this.getPremiumOffers,
     });
 
-    // GET /offers/favorites - favorite offers
-    this.addRoute({
-      path: '/offers/favorites',
-      method: HttpMethod.Get,
-      handler: this.getFavoriteOffers,
-    });
-
-    // POST /offers/:id/favorite - add to favorites
-    this.addRoute({
-      path: '/offers/:id/favorite',
-      method: HttpMethod.Post,
-      handler: this.addToFavorite,
-      middlewares: [
-        new ValidateObjectIdMiddleware('id'),
-        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
-      ]
-    });
-
-    // DELETE /offers/:id/favorite - remove from favorites
-    this.addRoute({
-      path: '/offers/:id/favorite',
-      method: HttpMethod.Delete,
-      handler: this.removeFromFavorite,
-      middlewares: [
-        new ValidateObjectIdMiddleware('id'),
-        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
-      ]
-    });
-
-    // GET /offers/:id - get offer by id
     this.addRoute({
       path: '/offers/:id',
       method: HttpMethod.Get,
@@ -85,7 +59,6 @@ export class OfferController extends BaseController {
       ]
     });
 
-    // GET /offers/:id/comments - get comments for offer
     this.addRoute({
       path: '/offers/:id/comments',
       method: HttpMethod.Get,
@@ -96,32 +69,64 @@ export class OfferController extends BaseController {
       ]
     });
 
-    // POST /offers - create offer
+    // PRIVATE ROUTES
+    this.addRoute({
+      path: '/offers/favorites',
+      method: HttpMethod.Get,
+      handler: this.getFavoriteOffers,
+      middlewares: [this.privateRouteMiddleware]
+    });
+
+    this.addRoute({
+      path: '/offers/:id/favorite',
+      method: HttpMethod.Post,
+      handler: this.addToFavorite,
+      middlewares: [
+        this.privateRouteMiddleware,
+        new ValidateObjectIdMiddleware('id'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
+      ]
+    });
+
+    this.addRoute({
+      path: '/offers/:id/favorite',
+      method: HttpMethod.Delete,
+      handler: this.removeFromFavorite,
+      middlewares: [
+        this.privateRouteMiddleware,
+        new ValidateObjectIdMiddleware('id'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
+      ]
+    });
+
     this.addRoute({
       path: '/offers',
       method: HttpMethod.Post,
       handler: this.createOffer,
-      middlewares: [new ValidateDtoMiddleware(createOfferSchema)]
+      middlewares: [
+        this.privateRouteMiddleware,
+        new ValidateDtoMiddleware(createOfferSchema)
+      ]
     });
 
-    // PATCH /offers/:id - update offer
     this.addRoute({
       path: '/offers/:id',
       method: HttpMethod.Patch,
       handler: this.updateOffer,
       middlewares: [
+        this.privateRouteMiddleware,
         new ValidateObjectIdMiddleware('id'),
         new DocumentExistsMiddleware(this.offerService, 'Offer', 'id'),
         new ValidateDtoMiddleware(updateOfferSchema)
       ]
     });
 
-    // DELETE /offers/:id - delete offer
     this.addRoute({
       path: '/offers/:id',
       method: HttpMethod.Delete,
       handler: this.deleteOffer,
       middlewares: [
+        this.privateRouteMiddleware,
         new ValidateObjectIdMiddleware('id'),
         new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
       ]
@@ -132,18 +137,20 @@ export class OfferController extends BaseController {
       method: HttpMethod.Post,
       handler: this.uploadImages,
       middlewares: [
+        this.privateRouteMiddleware,
         new ValidateObjectIdMiddleware('id'),
         new DocumentExistsMiddleware(this.offerService, 'Offer', 'id'),
         new UploadFileMiddleware(
           this.config.get('UPLOAD_DIRECTORY'),
-          'images', // поле для нескольких файлов
-          10 * 1024 * 1024 // 10MB для нескольких изображений
+          'images',
+          10 * 1024 * 1024
         )
       ]
     });
   }
 
-  private getOffers = asyncHandler(async (_req: Request, res: Response) => {
+  private getOffers = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?.userId;
     const offers = await this.offerService.findAll();
 
     const offersResponse = await Promise.all(
@@ -152,14 +159,15 @@ export class OfferController extends BaseController {
           excludeExtraneousValues: true,
         });
 
-        // Добавляем статистику комментариев
         const commentsCount = await this.commentService.countByOfferId(offer.id);
         const averageRating = await this.commentService.getAverageRating(offer.id);
+        const isFavorite = userId ? await this.favoriteService.isFavorite(userId, offer.id) : false;
 
         return {
           ...offerDto,
           commentsCount,
-          rating: averageRating || 0
+          rating: averageRating || 0,
+          isFavorite
         };
       })
     );
@@ -169,26 +177,37 @@ export class OfferController extends BaseController {
 
   private getOfferById = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id as string;
+    const userId = req.user?.userId;
     const offer = await this.offerService.findById(offerId);
 
-    const offerResponse = plainToInstance(OfferResponseDto, offer?.toObject(), {
+    if (!offer) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id ${offerId} not found`,
+        'OfferController'
+      );
+    }
+
+    const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
       excludeExtraneousValues: true,
     });
 
-    // Добавляем статистику комментариев
     const commentsCount = await this.commentService.countByOfferId(offerId);
     const averageRating = await this.commentService.getAverageRating(offerId);
+    const isFavorite = userId ? await this.favoriteService.isFavorite(userId, offerId) : false;
 
     this.ok(res, {
       ...offerResponse,
       commentsCount,
-      rating: averageRating || 0
+      rating: averageRating || 0,
+      isFavorite
     });
   });
 
   private getPremiumOffers = asyncHandler(async (req: Request, res: Response) => {
     const city = req.params.city as string;
     const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 3;
+    const userId = req.user?.userId;
 
     const offers = await this.offerService.findPremiumByCity(city, limit);
 
@@ -200,11 +219,13 @@ export class OfferController extends BaseController {
 
         const commentsCount = await this.commentService.countByOfferId(offer.id);
         const averageRating = await this.commentService.getAverageRating(offer.id);
+        const isFavorite = userId ? await this.favoriteService.isFavorite(userId, offer.id) : false;
 
         return {
           ...offerDto,
           commentsCount,
-          rating: averageRating || 0
+          rating: averageRating || 0,
+          isFavorite
         };
       })
     );
@@ -212,11 +233,28 @@ export class OfferController extends BaseController {
     this.ok(res, offersResponse);
   });
 
-  private getFavoriteOffers = asyncHandler(async (_req: Request, res: Response) => {
-    const offers = await this.offerService.findFavorites();
+  private getOfferComments = asyncHandler(async (req: Request, res: Response) => {
+    const offerId = req.params.id as string;
+    const comments = await this.commentService.findByOfferId(offerId);
+
+    this.ok(res, comments);
+  });
+
+  private getFavoriteOffers = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authenticated',
+        'OfferController'
+      );
+    }
+
+    const favoriteOffers = await this.favoriteService.findByUserId(userId);
 
     const offersResponse = await Promise.all(
-      offers.map(async (offer) => {
+      favoriteOffers.map(async (offer) => {
         const offerDto = plainToInstance(OfferResponseDto, offer.toObject(), {
           excludeExtraneousValues: true,
         });
@@ -227,7 +265,8 @@ export class OfferController extends BaseController {
         return {
           ...offerDto,
           commentsCount,
-          rating: averageRating || 0
+          rating: averageRating || 0,
+          isFavorite: true
         };
       })
     );
@@ -237,93 +276,164 @@ export class OfferController extends BaseController {
 
   private addToFavorite = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id as string;
-    const offer = await this.offerService.toggleFavorite(offerId, true);
+    const userId = req.user?.userId;
 
-    const offerResponse = plainToInstance(OfferResponseDto, offer?.toObject(), {
-      excludeExtraneousValues: true,
+    if (!userId) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authenticated',
+        'OfferController'
+      );
+    }
+
+    await this.favoriteService.add(userId, offerId);
+
+    this.ok(res, {
+      success: true,
+      message: 'Offer added to favorites'
     });
-
-    this.ok(res, offerResponse);
   });
 
   private removeFromFavorite = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id as string;
-    const offer = await this.offerService.toggleFavorite(offerId, false);
+    const userId = req.user?.userId;
 
-    const offerResponse = plainToInstance(OfferResponseDto, offer?.toObject(), {
-      excludeExtraneousValues: true,
+    if (!userId) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authenticated',
+        'OfferController'
+      );
+    }
+
+    await this.favoriteService.remove(userId, offerId);
+
+    this.ok(res, {
+      success: true,
+      message: 'Offer removed from favorites'
     });
-
-    this.ok(res, offerResponse);
-  });
-
-  private getOfferComments = asyncHandler(async (req: Request, res: Response) => {
-    const offerId = req.params.id as string;
-    const comments = await this.commentService.findByOfferId(offerId);
-
-    this.ok(res, comments);
   });
 
   private createOffer = asyncHandler(async (req: Request, res: Response) => {
     const dto = req.body as CreateOfferDto;
+    const userId = req.user?.userId;
 
-    if (!dto.host) {
+    if (!userId) {
       throw new HttpError(
-        StatusCodes.BAD_REQUEST,
-        'Host ID is required for offer creation'
+        StatusCodes.UNAUTHORIZED,
+        'User not authenticated',
+        'OfferController'
       );
     }
 
-    const offer = await this.offerService.create(dto);
+    const offer = await this.offerService.create({
+      ...dto,
+      host: userId
+    });
 
     const offerResponse = plainToInstance(OfferResponseDto, offer.toObject(), {
       excludeExtraneousValues: true,
     });
 
+    const commentsCount = await this.commentService.countByOfferId(offer.id);
+    const averageRating = await this.commentService.getAverageRating(offer.id);
+
     this.created(res, {
       ...offerResponse,
-      commentsCount: 0,
-      rating: 0
+      commentsCount,
+      rating: averageRating || 0,
+      isFavorite: false
     });
   });
 
   private updateOffer = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id as string;
     const dto = req.body as UpdateOfferDto;
+    const userId = req.user?.userId;
 
-    const offer = await this.offerService.updateById(offerId, dto);
+    if (!userId) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authenticated',
+        'OfferController'
+      );
+    }
 
-    const offerResponse = plainToInstance(OfferResponseDto, offer?.toObject(), {
+    const offer = await this.offerService.findById(offerId);
+    if (!offer) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id ${offerId} not found`,
+        'OfferController'
+      );
+    }
+
+    if (offer.host.toString() !== userId) {
+      throw new HttpError(
+        StatusCodes.FORBIDDEN,
+        'You can only update your own offers',
+        'OfferController'
+      );
+    }
+
+    const updatedOffer = await this.offerService.updateById(offerId, dto);
+
+    const offerResponse = plainToInstance(OfferResponseDto, updatedOffer?.toObject(), {
       excludeExtraneousValues: true,
     });
 
-    // Добавляем актуальную статистику комментариев
     const commentsCount = await this.commentService.countByOfferId(offerId);
     const averageRating = await this.commentService.getAverageRating(offerId);
+    const isFavorite = userId ? await this.favoriteService.isFavorite(userId, offerId) : false;
 
     this.ok(res, {
       ...offerResponse,
       commentsCount,
-      rating: averageRating || 0
+      rating: averageRating || 0,
+      isFavorite
     });
   });
 
   private deleteOffer = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id as string;
+    const userId = req.user?.userId;
 
-    // Сначала удаляем все комментарии к предложению
+    if (!userId) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authenticated',
+        'OfferController'
+      );
+    }
+
+    const offer = await this.offerService.findById(offerId);
+    if (!offer) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id ${offerId} not found`,
+        'OfferController'
+      );
+    }
+
+    if (offer.host.toString() !== userId) {
+      throw new HttpError(
+        StatusCodes.FORBIDDEN,
+        'You can only delete your own offers',
+        'OfferController'
+      );
+    }
+
     await this.commentService.deleteByOfferId(offerId);
-
-    // Затем удаляем само предложение
+    await this.favoriteService.removeByOfferId(offerId);
     await this.offerService.deleteById(offerId);
 
     this.noContent(res);
   });
 
-  // Добавить метод uploadImages
   private uploadImages = asyncHandler(async (req: Request, res: Response) => {
     const offerId = req.params.id as string;
     const files = req.files as Express.Multer.File[];
+    const userId = req.user?.userId;
 
     if (!files || files.length === 0) {
       throw new HttpError(
@@ -332,12 +442,15 @@ export class OfferController extends BaseController {
       );
     }
 
-    // Формируем URLs для загруженных изображений
-    const imageUrls = files.map((file) => `/static/${file.filename}`);
+    if (!userId) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authenticated',
+        'OfferController'
+      );
+    }
 
-    // Получаем текущее предложение
     const offer = await this.offerService.findById(offerId);
-
     if (!offer) {
       throw new HttpError(
         StatusCodes.NOT_FOUND,
@@ -345,10 +458,17 @@ export class OfferController extends BaseController {
       );
     }
 
-    // Добавляем новые изображения к существующим
+    if (offer.host.toString() !== userId) {
+      throw new HttpError(
+        StatusCodes.FORBIDDEN,
+        'You can only update images for your own offers',
+        'OfferController'
+      );
+    }
+
+    const imageUrls = files.map((file) => `/static/${file.filename}`);
     const updatedImages = [...offer.images, ...imageUrls];
 
-    // Обновляем предложение
     const updatedOffer = await this.offerService.updateById(offerId, {
       images: updatedImages
     });
