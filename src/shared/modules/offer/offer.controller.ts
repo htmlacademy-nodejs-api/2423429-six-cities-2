@@ -36,29 +36,21 @@ export class OfferController extends BaseController {
 
     this.logger.info('OfferController initialized');
 
-    // PUBLIC ROUTES
+    // GET /offers - all offers (public)
     this.addRoute({
       path: '/offers',
       method: HttpMethod.Get,
       handler: this.getOffers,
     });
 
+    // GET /offers/premium/:city - premium offers by city (public)
     this.addRoute({
       path: '/offers/premium/:city',
       method: HttpMethod.Get,
       handler: this.getPremiumOffers,
     });
 
-    this.addRoute({
-      path: '/offers/:id',
-      method: HttpMethod.Get,
-      handler: this.getOfferById,
-      middlewares: [
-        new ValidateObjectIdMiddleware('id'),
-        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
-      ]
-    });
-
+    // GET /offers/:id/comments - get comments for offer (public)
     this.addRoute({
       path: '/offers/:id/comments',
       method: HttpMethod.Get,
@@ -69,7 +61,9 @@ export class OfferController extends BaseController {
       ]
     });
 
-    // PRIVATE ROUTES
+    // ==================== PRIVATE ROUTES ====================
+
+    // GET /offers/favorites - favorite offers (private) - ВАЖНО: должно быть ПЕРЕД /offers/:id
     this.addRoute({
       path: '/offers/favorites',
       method: HttpMethod.Get,
@@ -77,6 +71,18 @@ export class OfferController extends BaseController {
       middlewares: [this.privateRouteMiddleware]
     });
 
+    // GET /offers/:id - get offer by id (public - but must be AFTER /offers/favorites)
+    this.addRoute({
+      path: '/offers/:id',
+      method: HttpMethod.Get,
+      handler: this.getOfferById,
+      middlewares: [
+        new ValidateObjectIdMiddleware('id'),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'id')
+      ]
+    });
+
+    // POST /offers/:id/favorite - add to favorites (private)
     this.addRoute({
       path: '/offers/:id/favorite',
       method: HttpMethod.Post,
@@ -88,6 +94,7 @@ export class OfferController extends BaseController {
       ]
     });
 
+    // DELETE /offers/:id/favorite - remove from favorites (private)
     this.addRoute({
       path: '/offers/:id/favorite',
       method: HttpMethod.Delete,
@@ -99,6 +106,7 @@ export class OfferController extends BaseController {
       ]
     });
 
+    // POST /offers - create offer (private)
     this.addRoute({
       path: '/offers',
       method: HttpMethod.Post,
@@ -109,6 +117,7 @@ export class OfferController extends BaseController {
       ]
     });
 
+    // PATCH /offers/:id - update offer (private)
     this.addRoute({
       path: '/offers/:id',
       method: HttpMethod.Patch,
@@ -121,6 +130,7 @@ export class OfferController extends BaseController {
       ]
     });
 
+    // DELETE /offers/:id - delete offer (private)
     this.addRoute({
       path: '/offers/:id',
       method: HttpMethod.Delete,
@@ -132,6 +142,7 @@ export class OfferController extends BaseController {
       ]
     });
 
+    // POST /offers/:id/images - upload images (private)
     this.addRoute({
       path: '/offers/:id/images',
       method: HttpMethod.Post,
@@ -368,7 +379,7 @@ export class OfferController extends BaseController {
       );
     }
 
-    if (offer.host.toString() !== userId) {
+    if (offer.host.id.toString() !== userId) {
       throw new HttpError(
         StatusCodes.FORBIDDEN,
         'You can only update your own offers',
@@ -415,7 +426,7 @@ export class OfferController extends BaseController {
       );
     }
 
-    if (offer.host.toString() !== userId) {
+    if (offer.host.id.toString() !== userId) {
       throw new HttpError(
         StatusCodes.FORBIDDEN,
         'You can only delete your own offers',
@@ -458,7 +469,7 @@ export class OfferController extends BaseController {
       );
     }
 
-    if (offer.host.toString() !== userId) {
+    if (offer.host.id.toString() !== userId) {
       throw new HttpError(
         StatusCodes.FORBIDDEN,
         'You can only update images for your own offers',
