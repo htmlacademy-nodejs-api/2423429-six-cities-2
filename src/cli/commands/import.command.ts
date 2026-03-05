@@ -8,8 +8,6 @@ import { MongoDatabaseClient } from '../../shared/libs/database-client/mongo.dat
 import { DEFAULT_DB_PORT, DEFAULT_USER_PASSWORD } from './commands.constant.js';
 import chalk from 'chalk';
 import { Offer } from '../../shared/helpers/index.js';
-import { DocumentType } from '@typegoose/typegoose';
-import { UserEntity } from '../../shared/modules/user/user.entity.js';
 
 export class ImportCommand implements Command {
   private userService: DefaultUserService;
@@ -77,7 +75,7 @@ export class ImportCommand implements Command {
         rooms: offerData.rooms || 1,
         guests: offerData.guests || 1,
         price: offerData.price || 100,
-        conveniences: offerData.conveniences || [],
+        goods: offerData.conveniences || [],
         host: userId, // Используем _id пользователя
         commentsCount: offerData.commentsCount || 0,
         location: offerData.location

@@ -1,21 +1,61 @@
-### Создать новое предложение (после регистрации пользователя)
-# Сначала выполните запрос на регистрацию и получите ID пользователя
-POST http://localhost:3000/offers
+### ========================================
+### TESTING OFFERS
+### ========================================
+
+@baseUrl = http://localhost:3000
+
+### ========================================
+### 1. LOGIN (get JWT token)
+### ========================================
+# @name login
+POST {{baseUrl}}/users/login
 Content-Type: application/json
 
 {
-  "title": "Уютная квартира в центре Парижа",
-  "description": "Прекрасная квартира с видом на Эйфелеву башню. Полностью меблирована, есть вся необходимая техника. Рядом метро, кафе и магазины.",
+  "email": "john@example.com",
+  "password": "123456"
+}
+
+###
+
+### ========================================
+### 2. SAVE TOKEN (copy from response above)
+### ========================================
+@authToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OThkZWI4NDE4MDMyZTU3MDNmZDE1ZGYiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJuYW1lIjoiSm9obiBEb2UiLCJ0eXBlIjoiY29tbW9uIiwiaWF0IjoxNzcyNTQzMTkwLCJleHAiOjE3NzI3MTU5OTB9.349_FteVrsrWnuw2_vfnr4WzA7AcqhqSg3NP8GjCFE4
+
+###
+
+### ========================================
+### 3. CREATE NEW OFFER (requires authorization)
+### ========================================
+POST {{baseUrl}}/offers
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Cozy apartment in the center of Paris",
+  "description": "Beautiful apartment with Eiffel Tower view. Fully furnished, all necessary appliances. Metro, cafes and shops nearby.",
   "city": "Paris",
   "previewImage": "apartment-1.jpg",
-  "images": ["apartment-1.jpg", "apartment-2.jpg", "apartment-3.jpg", "apartment-1.jpg", "apartment-2.jpg", "apartment-3.jpg"],
+  "images": [
+    "apartment-1.jpg",
+    "apartment-2.jpg",
+    "apartment-3.jpg",
+    "apartment-4.jpg",
+    "apartment-5.jpg",
+    "apartment-6.jpg"
+  ],
   "isPremium": true,
   "type": "apartment",
-  "bedrooms": 2,
-  "maxAdults": 4,
+  "rooms": 2,
+  "guests": 4,
   "price": 150,
-  "goods": ["Breakfast"],
-  "hostId": "694423a789d72214ee02a243",
+  "goods": [
+    "Breakfast",
+    "Air conditioning",
+    "Laptop friendly workspace",
+    "Fridge"
+  ],
   "location": {
     "latitude": 48.8566,
     "longitude": 2.3522
@@ -24,99 +64,159 @@ Content-Type: application/json
 
 ###
 
-### Получить все предложения
-GET http://localhost:3000/offers
-Content-Type: application/json
+### ========================================
+### 4. GET ALL OFFERS (public)
+### ========================================
+GET {{baseUrl}}/offers
 
 ###
 
-### Получить предложение по ID
-GET http://localhost:3000/offers/694423a789d72214ee02a245
-Content-Type: application/json
+### ========================================
+### 5. GET OFFER BY ID
+### ========================================
+GET {{baseUrl}}/offers/694423a789d72214ee02a245
 
 ###
 
-### Получить премиальные предложения по городу
-GET http://localhost:3000/offers/premium/Paris
-Content-Type: application/json
+### ========================================
+### 6. GET PREMIUM OFFERS BY CITY
+### ========================================
+GET {{baseUrl}}/offers/premium/Paris
 
 ###
 
-### Создать премиальное предложение в Париже
-POST http://localhost:3000/offers
-Content-Type: application/json
-
-{
-  "title": "Роскошный пентхаус с видом на Эйфелеву башню",
-  "description": "Эксклюзивный пентхаус в самом сердце Парижа. Панорамные окна, терраса лифт. Идеально для незабываемого отдыха.",
-  "city": "Paris",
-  "previewImage": "penthouse-paris.jpg",
-  "images": ["penthouse1.jpg", "penthouse2.jpg", "penthouse3.jpg","penthouse1.jpg", "penthouse2.jpg", "penthouse3.jpg"],
-  "isPremium": true,
-  "type": "apartment",
-  "bedrooms": 3,
-  "maxAdults": 6,
-  "price": 350,
-  "goods": ["Breakfast"],
-  "hostId": "694423a789d72214ee02a243",
-  "location": {
-    "latitude": 48.8584,
-    "longitude": 2.2945
-  }
-}
-
-### Получить премиальные предложения с лимитом
-GET http://localhost:3000/offers/premium/Paris?limit=5
-Content-Type: application/json
+### ========================================
+### 7. GET PREMIUM OFFERS WITH LIMIT
+### ========================================
+GET {{baseUrl}}/offers/premium/Paris?limit=5
 
 ###
 
-### Получить избранные предложения
-GET http://localhost:3000/offers/favorites
-Content-Type: application/json
+### ========================================
+### 8. GET FAVORITE OFFERS (requires authorization)
+### ========================================
+GET {{baseUrl}}/offers/favorites
+Authorization: Bearer {{authToken}}
 
 ###
 
-### Добавить предложение в избранное
-POST http://localhost:3000/offers/694423a789d72214ee02a245/favorite
-Content-Type: application/json
+### ========================================
+### 9. ADD OFFER TO FAVORITES (requires authorization)
+### ========================================
+POST {{baseUrl}}/offers/694423a789d72214ee02a245/favorite
+Authorization: Bearer {{authToken}}
 
 ###
 
-### Удалить предложение из избранного
-DELETE http://localhost:3000/offers/694423a789d72214ee02a245/favorite
-Content-Type: application/json
+### ========================================
+### 10. REMOVE OFFER FROM FAVORITES (requires authorization)
+### ========================================
+DELETE {{baseUrl}}/offers/694423a789d72214ee02a245/favorite
+Authorization: Bearer {{authToken}}
 
 ###
 
-### Обновить предложение
-PATCH http://localhost:3000/offers/694423a789d72214ee02a245
+### ========================================
+### 11. UPDATE OFFER (requires authorization)
+### ========================================
+PATCH {{baseUrl}}/offers/694423a789d72214ee02a245
+Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
   "price": 180,
-  "isPremium": false
+  "isPremium": false,
+  "guests": 5
 }
 
 ###
 
-### Удалить предложение
-DELETE http://localhost:3000/offers/694423a789d72214ee02a245
-Content-Type: application/json
+### ========================================
+### 12. DELETE OFFER (requires authorization)
+### ========================================
+DELETE {{baseUrl}}/offers/694423a789d72214ee02a245
+Authorization: Bearer {{authToken}}
 
 ###
 
-### Создать предложение без обязательных полей (должна вернуть 400)
-POST http://localhost:3000/offers
+### ========================================
+### ERROR TESTS
+### ========================================
+
+### 13. CREATE OFFER WITHOUT TOKEN (should return 401)
+POST {{baseUrl}}/offers
 Content-Type: application/json
 
 {
-  "title": "Неполное предложение",
-  "city": "Paris"
+  "title": "Test offer",
+  "description": "Test offer description",
+  "city": "Paris",
+  "previewImage": "apartment-1.jpg",
+  "images": [
+    "apartment-1.jpg",
+    "apartment-2.jpg",
+    "apartment-3.jpg",
+    "apartment-4.jpg",
+    "apartment-5.jpg",
+    "apartment-6.jpg"
+  ],
+  "isPremium": false,
+  "type": "apartment",
+  "rooms": 2,
+  "guests": 3,
+  "price": 100,
+  "goods": ["Breakfast"],
+  "location": {
+    "latitude": 48.8566,
+    "longitude": 2.3522
+  }
 }
 
 ###
 
-### Получить несуществующее предложение (должна вернуть 404)
-GET http://localhost:3000/offers/000000000000000000000000
+### 14. CREATE OFFER WITH INSUFFICIENT IMAGES (should return 400)
+POST {{baseUrl}}/offers
+Authorization: Bearer {{authToken}}
 Content-Type: application/json
+
+{
+  "title": "Cozy apartment in Paris",
+  "description": "Beautiful apartment with Eiffel Tower view.",
+  "city": "Paris",
+  "previewImage": "apartment-1.jpg",
+  "images": ["apartment-1.jpg", "apartment-2.jpg"],
+  "isPremium": true,
+  "type": "apartment",
+  "rooms": 2,
+  "guests": 4,
+  "price": 150,
+  "goods": ["Breakfast"],
+  "location": {
+    "latitude": 48.8566,
+    "longitude": 2.3522
+  }
+}
+
+###
+
+### 15. UPDATE OFFER BY NON-AUTHOR (should return 403)
+# Сначала создайте предложение от другого пользователя,
+# затем попробуйте обновить с токеном John Doe
+PATCH {{baseUrl}}/offers/ANOTHER_USER_OFFER_ID
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "price": 200
+}
+
+###
+
+### 16. DELETE OFFER BY NON-AUTHOR (should return 403)
+DELETE {{baseUrl}}/offers/ANOTHER_USER_OFFER_ID
+Authorization: Bearer {{authToken}}
+
+###
+
+### 17. GET NON-EXISTENT OFFER (should return 404)
+GET {{baseUrl}}/offers/000000000000000000000000

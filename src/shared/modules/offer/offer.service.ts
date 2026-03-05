@@ -15,12 +15,10 @@ export class DefaultOfferService implements OfferService {
   ) {}
 
   public async create(dto: CreateOfferDto): Promise<DocumentType<OfferEntity>> {
-
     const result = await this.offerModel.create({
       ...dto,
       postDate: dto.postDate || new Date(),
       isPremium: dto.isPremium ?? false,
-      isFavorite: dto.isFavorite ?? false,
       rating: dto.rating ?? 0,
       commentsCount: 0
     });
@@ -78,24 +76,6 @@ export class DefaultOfferService implements OfferService {
       .exec();
   }
 
-  public async findFavorites(): Promise<DocumentType<OfferEntity>[]> {
-    return this.offerModel
-      .find({ isFavorite: true })
-      .populate('host')
-      .sort({ postDate: -1 })
-      .exec();
-  }
-
-  public async toggleFavorite(offerId: string, isFavorite: boolean): Promise<DocumentType<OfferEntity> | null> {
-    return this.offerModel
-      .findByIdAndUpdate(
-        offerId,
-        { isFavorite },
-        { new: true }
-      )
-      .exec();
-  }
-
   public async exists(offerId: string): Promise<boolean> {
     const offer = await this.offerModel.exists({ _id: offerId }).exec();
     return !!offer;
@@ -149,19 +129,15 @@ export class DefaultOfferService implements OfferService {
     offerId: string,
     stats: { rating?: number; commentCount?: number }
   ): Promise<void> {
-
     const updateData: Partial<Pick<OfferEntity, 'rating' | 'commentsCount'>> = {};
-
 
     if (stats.rating !== undefined) {
       updateData.rating = stats.rating;
     }
 
-
     if (stats.commentCount !== undefined) {
       updateData.commentsCount = stats.commentCount;
     }
-
 
     if (Object.keys(updateData).length === 0) {
       this.logger.debug(`No stats to update for offer ${offerId}`);

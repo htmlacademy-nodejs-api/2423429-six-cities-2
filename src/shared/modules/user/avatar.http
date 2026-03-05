@@ -2,8 +2,13 @@
 ### ТЕСТИРОВАНИЕ ЗАГРУЗКИ АВАТАРА
 ### ========================================
 
-### 1. Регистрация пользователя для теста аватара
-POST http://localhost:3000/users
+@baseUrl = http://localhost:3000
+
+### ========================================
+### 1. РЕГИСТРАЦИЯ ПОЛЬЗОВАТЕЛЯ ДЛЯ ТЕСТА АВАТАРА
+### ========================================
+# @name register
+POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
@@ -15,14 +20,32 @@ Content-Type: application/json
 
 ###
 
-### 2. Получение информации о пользователе (проверяем, что аватар пустой)
-GET http://localhost:3000/users/699d9db246d9ea7acc55aea6/
+### ========================================
+### 2. ВХОД В СИСТЕМУ (получение JWT токена)
+### ========================================
+# @name login
+POST {{baseUrl}}/users/login
 Content-Type: application/json
+
+{
+  "email": "avatar-test-1@example.com",
+  "password": "123456"
+}
 
 ###
 
-### 3. Загрузка аватара (замените ID на полученный в шаге 1)
-POST http://localhost:3000/users/699d9c8c46d9ea7acc55aea0/avatar
+### ========================================
+### 3. СОХРАНЯЕМ ТОКЕН (скопируйте из ответа выше)
+### ========================================
+@authToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OWE2ZGM5MWUyMGVmZTcwYTFkNjljYTUiLCJlbWFpbCI6ImF2YXRhci10ZXN0LTFAZXhhbXBsZS5jb20iLCJuYW1lIjoiQXZhdGFyIFRlc3QiLCJ0eXBlIjoiY29tbW9uIiwiaWF0IjoxNzcyNTQzMTM2LCJleHAiOjE3NzI3MTU5MzZ9.IEWzY31w2oP4Ca7ce2_10ThvIvhHfedrRdoEWJCleHE
+
+###
+
+### ========================================
+### 4. ЗАГРУЗКА АВАТАРА (НОВЫЙ МАРШРУТ - без ID в URL)
+### ========================================
+POST {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -34,14 +57,11 @@ Content-Type: image/jpeg
 
 ###
 
-### 4. Проверка после загрузки (avatar должен содержать путь к файлу)
-GET http://localhost:3000/users/ID_ПОЛЬЗОВАТЕЛЯ_ИЗ_ШАГА_1
-Content-Type: application/json
-
-###
-
-### 5. Загрузка другого аватара (обновление)
-POST http://localhost:3000/users/ID_ПОЛЬЗОВАТЕЛЯ_ИЗ_ШАГА_1/avatar
+### ========================================
+### 5. ЗАГРУЗКА ДРУГОГО АВАТАРА (обновление)
+### ========================================
+POST {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -53,21 +73,11 @@ Content-Type: image/jpeg
 
 ###
 
-### 6. Проверка после обновления (путь должен измениться)
-GET http://localhost:3000/users/ID_ПОЛЬЗОВАТЕЛЯ_ИЗ_ШАГА_1
-Content-Type: application/json
-
-###
-
-### 7. Удаление аватара
-DELETE http://localhost:3000/users/ID_ПОЛЬЗОВАТЕЛЯ_ИЗ_ШАГА_1/avatar
-Content-Type: application/json
-
-###
-
-### 8. Проверка после удаления (avatar должен быть пустым)
-GET http://localhost:3000/users/ID_ПОЛЬЗОВАТЕЛЯ_ИЗ_ШАГА_1
-Content-Type: application/json
+### ========================================
+### 6. УДАЛЕНИЕ АВАТАРА
+### ========================================
+DELETE {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
 
 ###
 
@@ -75,8 +85,8 @@ Content-Type: application/json
 ### ТЕСТЫ С ОШИБКАМИ
 ### ========================================
 
-### 9. Загрузка аватара для несуществующего пользователя (должна вернуть 404)
-POST http://localhost:3000/users/000000000000000000000000/avatar
+### 7. ЗАГРУЗКА БЕЗ ТОКЕНА (должна вернуть 401)
+POST {{baseUrl}}/users/avatar
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -88,8 +98,9 @@ Content-Type: image/jpeg
 
 ###
 
-### 10. Загрузка без файла (должна вернуть 400)
-POST http://localhost:3000/users/ID_ПОЛЬЗОВАТЕЛЯ_ИЗ_ШАГА_1/avatar
+### 8. ЗАГРУЗКА БЕЗ ФАЙЛА (должна вернуть 400)
+POST {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -100,8 +111,9 @@ Content-Type: image/jpeg
 
 ###
 
-### 11. Загрузка файла неверного типа (должна вернуть 400)
-POST http://localhost:3000/users/ID_ПОЛЬЗОВАТЕЛЯ_ИЗ_ШАГА_1/avatar
+### 9. ЗАГРУЗКА ФАЙЛА НЕВЕРНОГО ТИПА (должна вернуть 400)
+POST {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -110,47 +122,3 @@ Content-Type: text/plain
 
 < ./mocks/test.txt
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
-
-###
-
-### ========================================
-### ТЕСТЫ С ПОЛЬЗОВАТЕЛЯМИ ИЗ user.http
-### ========================================
-
-### 12. Загрузка аватара для пользователя Jane Smith (pro)
-### Используйте ID из ответа на регистрацию Jane Smith
-POST http://localhost:3000/users/699d9c8c46d9ea7acc55aea0/avatar
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
-
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="avatar"; filename="test-avatar.jpg"
-Content-Type: image/jpeg
-
-< ./mocks/test-avatar.jpg
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
-
-###
-
-### 13. Проверка пользователя Jane Smith после загрузки аватара
-GET http://localhost:3000/users/ID_JANE_SMITH
-Content-Type: application/json
-
-###
-
-### 14. Загрузка аватара для пользователя John Doe (обычный)
-### Используйте ID из ответа на регистрацию John Doe
-POST http://localhost:3000/users/ID_JOHN_DOE/avatar
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
-
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="avatar"; filename="test-avatar.jpg"
-Content-Type: image/jpeg
-
-< ./mocks/test-avatar.jpg
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
-
-###
-
-### 15. Проверка пользователя John Doe после загрузки аватара
-GET http://localhost:3000/users/ID_JOHN_DOE
-Content-Type: application/json

@@ -1,10 +1,14 @@
+### ========================================
+### ТЕСТИРОВАНИЕ ПОЛЬЗОВАТЕЛЕЙ
+### ========================================
+
 ### Регистрация нового пользователя (обычный)
 POST http://localhost:3000/users
 Content-Type: application/json
 
 {
   "name": "John Doe",
-  "email": "john@example.com",
+  "email": "john1@examplle.com",
   "password": "123456",
   "type": "common"
 }
@@ -17,10 +21,9 @@ Content-Type: application/json
 
 {
   "name": "Jane Smith",
-  "email": "jane@example6.com",
+  "email": "jane@example611.com",
   "password": "qwerty",
-  "type": "pro",
-  "avatar": "test-avatar.jpg"
+  "type": "pro"
 }
 
 ###
@@ -55,5 +58,3 @@ Content-Type: application/json
   "name": "Invalid User",
   "email": "invalid@example.com"
 }
-
-###

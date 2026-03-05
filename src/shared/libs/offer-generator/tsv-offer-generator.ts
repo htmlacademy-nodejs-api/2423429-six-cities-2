@@ -37,7 +37,7 @@ export class TSVOfferGenerator implements OfferGenerator {
     // Выбираем случайный тип пользователя
     const hostType = getRandomBoolean() ? 'Pro' : 'Regular';
 
-    const location = getRandomItem<Location>(this.mockData.locations);
+    const location = getRandomItem<Location>(this.mockData.Locations);
 
     const images = Array.from({ length: 6 }, () =>
       getRandomItem<string>(this.mockData.offerImages)

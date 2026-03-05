@@ -7,19 +7,14 @@ export interface OfferService {
   create(dto: CreateOfferDto): Promise<DocumentType<OfferEntity>>;
   findById(offerId: string): Promise<DocumentType<OfferEntity> | null>;
   findAll(): Promise<DocumentType<OfferEntity>[]>;
-  deleteById(offerId: string): Promise<DocumentType<OfferEntity> | null>;
   updateById(offerId: string, dto: UpdateOfferDto): Promise<DocumentType<OfferEntity> | null>;
-  findPremiumByCity(city: string, limit?: number): Promise<DocumentType<OfferEntity>[]>;
-  findFavorites(): Promise<DocumentType<OfferEntity>[]>;
-  toggleFavorite(offerId: string, isFavorite: boolean): Promise<DocumentType<OfferEntity> | null>;
+  deleteById(offerId: string): Promise<DocumentType<OfferEntity> | null>;
+  findPremiumByCity(city: string, limit: number): Promise<DocumentType<OfferEntity>[]>;
   exists(offerId: string): Promise<boolean>;
-
   incrementCommentCount(offerId: string): Promise<DocumentType<OfferEntity> | null>;
   decrementCommentCount(offerId: string): Promise<DocumentType<OfferEntity> | null>;
   findByHostId(hostId: string): Promise<DocumentType<OfferEntity>[]>;
   countByHostId(hostId: string): Promise<number>;
   updateRating(offerId: string, newRating: number): Promise<DocumentType<OfferEntity> | null>;
-
-  updateOfferStats(offerId: string, stats: { rating?: number; commentCount?: number }
-  ): Promise<void>;
+  updateOfferStats(offerId: string, stats: { rating?: number; commentCount?: number }): Promise<void>;
 }

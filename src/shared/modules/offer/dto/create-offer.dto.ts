@@ -1,10 +1,10 @@
 import { Expose } from 'class-transformer';
 import Joi from 'joi';
-import { City, HousingType, Convenience } from '../../../types/index.js';
+import { City, HousingType, ConveniencesType } from '../../../types/index.js';
 
 const cityValues = Object.values(City);
 const housingTypeValues = Object.values(HousingType);
-const convenienceValues = Object.values(Convenience);
+const goodsValues = Object.values(ConveniencesType);
 
 export class CreateOfferDto {
   @Expose()
@@ -47,10 +47,10 @@ export class CreateOfferDto {
   public price!: number;
 
   @Expose()
-  public conveniences!: string[];
+  public goods!: string[];
 
   @Expose()
-  public host!: string;
+  public host?: string;
 
   @Expose()
   public location!: {
@@ -80,6 +80,10 @@ export const createOfferSchema = Joi.object({
       'any.required': 'Description is required'
     }),
 
+  postDate: Joi.date()
+    .default(Date.now)
+    .optional(),
+
   city: Joi.string()
     .valid(...cityValues)
     .required()
@@ -89,15 +93,15 @@ export const createOfferSchema = Joi.object({
     }),
 
   previewImage: Joi.string()
-    .uri()
+    .pattern(/\.(jpg|jpeg|png)$/)
     .required()
     .messages({
-      'string.uri': 'Preview image must be a valid URL',
+      'string.pattern.base': 'Preview image must be a valid image file (jpg, jpeg, png)',
       'any.required': 'Preview image is required'
     }),
 
   images: Joi.array()
-    .items(Joi.string().uri())
+    .items(Joi.string().pattern(/\.(jpg|jpeg|png)$/))
     .length(6)
     .required()
     .messages({
@@ -112,6 +116,16 @@ export const createOfferSchema = Joi.object({
       'any.required': 'isPremium is required'
     }),
 
+  isFavorite: Joi.boolean()
+    .default(false)
+    .optional(),
+
+  rating: Joi.number()
+    .min(1)
+    .max(5)
+    .default(0)
+    .optional(),
+
   type: Joi.string()
     .valid(...housingTypeValues)
     .required()
@@ -120,30 +134,30 @@ export const createOfferSchema = Joi.object({
       'any.required': 'Type is required'
     }),
 
-  bedrooms: Joi.number()
+  rooms: Joi.number()
     .integer()
     .min(1)
     .max(8)
     .required()
     .messages({
-      'number.base': 'Bedrooms must be a number',
-      'number.integer': 'Bedrooms must be an integer',
-      'number.min': 'Minimum bedrooms is 1',
-      'number.max': 'Maximum bedrooms is 8',
-      'any.required': 'Bedrooms is required'
+      'number.base': 'Rooms must be a number',
+      'number.integer': 'Rooms must be an integer',
+      'number.min': 'Minimum rooms is 1',
+      'number.max': 'Maximum rooms is 8',
+      'any.required': 'Rooms is required'
     }),
 
-  maxAdults: Joi.number()
+  guests: Joi.number()
     .integer()
     .min(1)
     .max(10)
     .required()
     .messages({
-      'number.base': 'Max adults must be a number',
-      'number.integer': 'Max adults must be an integer',
-      'number.min': 'Minimum max adults is 1',
-      'number.max': 'Maximum max adults is 10',
-      'any.required': 'Max adults is required'
+      'number.base': 'Guests must be a number',
+      'number.integer': 'Guests must be an integer',
+      'number.min': 'Minimum guests is 1',
+      'number.max': 'Maximum guests is 10',
+      'any.required': 'Guests is required'
     }),
 
   price: Joi.number()
@@ -160,21 +174,20 @@ export const createOfferSchema = Joi.object({
     }),
 
   goods: Joi.array()
-    .items(Joi.string().valid(...convenienceValues))
+    .items(Joi.string().valid(...goodsValues))
     .min(1)
     .required()
     .messages({
       'array.min': 'Goods must contain at least 1 item',
       'any.required': 'Goods are required',
-      'any.only': `Goods must be from: ${convenienceValues.join(', ')}`
+      'any.only': `Goods must be from: ${goodsValues.join(', ')}`
     }),
 
   host: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/)
-    .required()
+    .optional()
     .messages({
-      'string.pattern.base': 'Host ID must be a valid MongoDB ObjectId',
-      'any.required': 'Host ID is required'
+      'string.pattern.base': 'Host ID must be a valid MongoDB ObjectId'
     }),
 
   location: Joi.object({

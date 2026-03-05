@@ -8,7 +8,6 @@ import express, { Express } from 'express';
 import { Controller } from '../shared/libs/rest/index.js';
 import { ExceptionFilter } from '../shared/libs/rest/exception-filter/exception-filter.interface.js';
 
-
 @injectable()
 export class RestApplication {
   private readonly server: Express;
@@ -20,7 +19,7 @@ export class RestApplication {
     @inject(Component.UserController) private readonly userController: Controller,
     @inject(Component.OfferController) private readonly offerController: Controller,
     @inject(Component.CommentController) private readonly commentController: Controller,
-    @inject(Component.ExceptionFilter) private readonly exceptionFilter: ExceptionFilter
+    @inject(Component.ExceptionFilter) private readonly exceptionFilter: ExceptionFilter,
   ) {
     this.server = express();
   }
@@ -40,6 +39,10 @@ export class RestApplication {
   private _initMiddleware() {
     this.server.use(express.json());
     this.logger.info('Middleware initialized');
+    this.server.use(
+      '/static',
+      express.static(this.config.get('UPLOAD_DIRECTORY'))
+    );
   }
 
   private _initControllers() {
