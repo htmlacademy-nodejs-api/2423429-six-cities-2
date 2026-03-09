@@ -35,10 +35,10 @@ export class OfferResponseDto {
   public type!: string;
 
   @Expose()
-  public bedrooms!: number;
+  public rooms!: number;
 
   @Expose()
-  public maxAdults!: number;
+  public guests!: number;
 
   @Expose()
   public price!: number;
