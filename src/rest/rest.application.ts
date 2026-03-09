@@ -5,6 +5,7 @@ import { Component } from '../shared/types/index.js';
 import { DatabaseClient } from '../shared/libs/database-client/index.js';
 import { getMongoURI } from '../shared/helpers/index.js';
 import express, { Express } from 'express';
+import cors from 'cors';
 import { Controller } from '../shared/libs/rest/index.js';
 import { ExceptionFilter } from '../shared/libs/rest/exception-filter/exception-filter.interface.js';
 
@@ -29,7 +30,7 @@ export class RestApplication {
       this.config.get('DB_USER'),
       this.config.get('DB_PASSWORD'),
       this.config.get('DB_HOST'),
-      this.config.get('DB_PORT'),
+      this.config.get('DB_PORT').toString(),
       this.config.get('DB_NAME'),
     );
 
@@ -37,12 +38,40 @@ export class RestApplication {
   }
 
   private _initMiddleware() {
+    // ========== CORS middleware ==========
+    // Вариант 1: Разрешить все источники (для разработки)
+    this.server.use(cors());
+    this.logger.info('CORS middleware initialized (all origins allowed)');
+
+    // Вариант 2: Разрешить только конкретные источники (для продакшена)
+    // Закомментируйте вариант 1 и раскомментируйте этот код:
+    /*
+    this.server.use(cors({
+      origin: [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:4000',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:4000'
+      ],
+      methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true,
+      optionsSuccessStatus: 204
+    }));
+    this.logger.info('CORS middleware initialized (restricted origins)');
+    */
+
+    // JSON middleware
     this.server.use(express.json());
-    this.logger.info('Middleware initialized');
+    this.logger.info('JSON middleware initialized');
+
+    // Static files middleware
     this.server.use(
       '/static',
       express.static(this.config.get('UPLOAD_DIRECTORY'))
     );
+    this.logger.info('Static middleware initialized');
   }
 
   private _initControllers() {
@@ -59,27 +88,35 @@ export class RestApplication {
 
   private async _initServer() {
     const port = this.config.get('PORT');
-    this.server.listen(port);
+    this.server.listen(port, () => {
+      this.logger.info(`Server is listening on http://localhost:${port}`);
+    });
   }
 
   public async init() {
+    this.logger.info('=================================');
     this.logger.info('Application initialization');
+    this.logger.info('=================================');
 
-    this.logger.info('Init database...');
+    this.logger.info('Step 1: Database connection');
     await this._initDb();
-    this.logger.info('Init database completed');
+    this.logger.info('Database connected');
 
-    this.logger.info('Init middleware...');
+    this.logger.info('Step 2: Middleware initialization');
     this._initMiddleware();
 
-    this.logger.info('Init controllers...');
+    this.logger.info('Step 3: Controllers initialization');
     this._initControllers();
 
-    this.logger.info('Init exception filters...');
+    this.logger.info('Step 4: Exception filters initialization');
     this._initExceptionFilters();
 
-    this.logger.info('Try to init server...');
+    this.logger.info('Step 5: Server startup');
     await this._initServer();
-    this.logger.info(`Server started on http://localhost:${this.config.get('PORT')}`);
+
+    this.logger.info('=================================');
+    this.logger.info('Application successfully started');
+    this.logger.info(`Server: http://localhost:${this.config.get('PORT')}`);
+    this.logger.info('=================================');
   }
 }

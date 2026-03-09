@@ -11,7 +11,7 @@ export class UserResponseDto {
   public name!: string;
 
   @Expose()
-  public avatarUrl?: string;
+  public avatar?: string;
 
   @Expose()
   public isPro!: boolean;

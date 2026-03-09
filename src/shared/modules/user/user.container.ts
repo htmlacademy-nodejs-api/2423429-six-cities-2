@@ -1,4 +1,3 @@
-// src/shared/modules/user/user.container.ts
 import { Container } from 'inversify';
 import { types } from '@typegoose/typegoose';
 import { Component } from '../../types/index.js';

@@ -9,7 +9,7 @@ export type RestSchema = {
   DB_HOST: string;
   DB_USER: string;
   DB_PASSWORD: string;
-  DB_PORT: string;
+  DB_PORT: number;
   DB_NAME: string;
   UPLOAD_DIRECTORY: string;
   JWT_SECRET: string;
@@ -52,7 +52,7 @@ export const configRestSchema = convict<RestSchema>({
     doc: 'Port to connect to the database (MongoDB)',
     format: 'port',
     env: 'DB_PORT',
-    default: '27017',
+    default: 27017,
   },
   DB_NAME: {
     doc: 'Database name (MongoDB)',

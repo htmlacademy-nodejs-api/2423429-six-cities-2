@@ -48,6 +48,12 @@ export class UserController extends BaseController {
       handler: this.login,
       middlewares: [new ValidateDtoMiddleware(loginUserSchema)]
     });
+    this.addRoute({
+      path: '/users/me',
+      method: HttpMethod.Get,
+      handler: this.getCurrentUser,
+      middlewares: [this.privateRouteMiddleware]
+    });
 
     // Приватные маршруты для аватара (требуют авторизации)
     this.addRoute({
@@ -92,6 +98,32 @@ export class UserController extends BaseController {
     });
 
     this.created(res, userResponse);
+  });
+
+  private getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authenticated',
+        'UserController'
+      );
+    }
+
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `User with id ${userId} not found`
+      );
+    }
+
+    const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
+      excludeExtraneousValues: true,
+    });
+
+    this.ok(res, userResponse);
   });
 
   private login = asyncHandler(async (req: Request, res: Response) => {
