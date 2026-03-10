@@ -13,10 +13,6 @@ export type MockServerData = {
   users: string[];
   emails: string[];
   avatars: string[];
-<<<<<<< HEAD
-  Locations: MockLocation[];
-=======
   locations: MockLocation[];
->>>>>>> feature-fixes
 };
 

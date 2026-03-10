@@ -23,17 +23,14 @@ export abstract class BaseController implements Controller {
   }
 
   public addRoute(route: Route): void {
-    // Собираем middleware-функции
+
     const middlewares: RequestHandler[] = (route.middlewares || [])
       .map((middleware: Middleware) => middleware.execute.bind(middleware));
 
-    // Добавляем хендлер после всех middleware
     const handlers = [...middlewares, route.handler.bind(this)];
 
-    // Регистрируем маршрут с массивом обработчиков
     this._router[route.method](route.path, handlers);
 
-    // Логируем информацию о маршруте
     const middlewareInfo = route.middlewares?.length
       ? ` with ${route.middlewares.length} middleware(s)`
       : '';

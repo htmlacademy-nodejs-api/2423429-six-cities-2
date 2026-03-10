@@ -7,19 +7,14 @@ import { UserEntity } from './user.entity.js';
 import { UserService } from './user-service.interface.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { createSHA256 } from '../../helpers/index.js';
-<<<<<<< HEAD
-=======
-// ✅ ИМПОРТЫ ДЛЯ ОБРАБОТКИ ОШИБОК
 import { HttpError } from '../../libs/rest/errors/http-error.js';
 import { StatusCodes } from 'http-status-codes';
 
-// ✅ Интерфейс для ошибки MongoDB (добавьте в начало файла)
 interface MongoError extends Error {
   code: number;
   keyPattern?: Record<string, unknown>;
   keyValue?: Record<string, unknown>;
 }
->>>>>>> feature-fixes
 
 @injectable()
 export class DefaultUserService implements UserService {
@@ -29,14 +24,6 @@ export class DefaultUserService implements UserService {
   ) {}
 
   public async create(dto: CreateUserDto, salt: string): Promise<DocumentType<UserEntity>> {
-<<<<<<< HEAD
-    const user = await this.userModel.create({
-      ...dto,
-      password: createSHA256(dto.password, salt)
-    });
-    this.logger.info(`New user created: ${user.email}`);
-    return user;
-=======
     const existingUser = await this.findByEmail(dto.email);
 
     if (existingUser) {
@@ -69,7 +56,6 @@ export class DefaultUserService implements UserService {
 
   private isMongoError(error: unknown): error is MongoError {
     return typeof error === 'object' && error !== null && 'code' in error;
->>>>>>> feature-fixes
   }
 
   public async findByEmail(email: string): Promise<DocumentType<UserEntity> | null> {
@@ -98,10 +84,6 @@ export class DefaultUserService implements UserService {
   }
 
   public async findOrCreate(dto: CreateUserDto, salt: string): Promise<DocumentType<UserEntity>> {
-<<<<<<< HEAD
-
-=======
->>>>>>> feature-fixes
     const existingUser = await this.findByEmail(dto.email);
 
     if (existingUser) {
