@@ -30,7 +30,6 @@ export class DefaultUserService implements UserService {
     this.logger.info(`📧 Email: ${dto.email}`);
     this.logger.info(`🧂 Salt provided: ${!!salt}`);
 
-    // 1. Проверяем существование пользователя
     this.logger.info('🔍 Checking if user exists...');
     const existingUser = await this.findByEmail(dto.email);
     this.logger.info(`📌 Existing user: ${existingUser ? 'FOUND' : 'NOT FOUND'}`);
@@ -55,7 +54,6 @@ export class DefaultUserService implements UserService {
       throw error;
     }
 
-    // 2. Создаем нового пользователя
     this.logger.info('✅ User not found, creating new...');
     try {
       const hashedPassword = createSHA256(dto.password, salt);
@@ -71,7 +69,6 @@ export class DefaultUserService implements UserService {
     } catch (error) {
       this.logger.info(`💥 ERROR during user creation: ${error}`);
 
-      // 3. Проверяем ошибку MongoDB (дубликат)
       if (this.isMongoError(error) && error.code === 11000) {
         this.logger.info('📌 MongoDB duplicate error (11000) caught in service!');
 
