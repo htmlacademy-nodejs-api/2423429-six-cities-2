@@ -48,9 +48,7 @@ export class ImportCommand implements Command {
 
   private async saveOffer(offerData: Offer): Promise<void> {
     try {
-<<<<<<< HEAD
-      // 1. Find or create user using the new method
-=======
+
 >>>>>>> feature-fixes
       const user = await this.userService.findOrCreate({
         name: offerData.host.name,
