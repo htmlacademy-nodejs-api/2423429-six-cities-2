@@ -1,0 +1,105 @@
+{
+  "api": {
+    "cities": [
+      "Paris",
+      "Cologne",
+      "Brussels",
+      "Amsterdam",
+      "Hamburg",
+      "Dusseldorf"
+    ],
+    "titles": [
+      "Beautiful apartment in city center",
+      "Modern loft with stunning view",
+      "Cozy room near main attractions",
+      "Luxury hotel suite premium class",
+      "Spacious family house with garden",
+      "Charming studio for romantic getaway",
+      "Business class apartment for professionals",
+      "Budget-friendly room for students",
+      "Premium penthouse with terrace",
+      "Quiet apartment in residential area"
+    ],
+    "descriptions": [
+      "A charming accommodation in the heart of the city with stunning views. Perfect for romantic getaways or business trips. Located near all major attractions and public transportation.",
+      "Spacious living area overlooking the famous city landmarks. Features modern design and all necessary amenities for a comfortable stay. Close to museums and nightlife.",
+      "Comfortable and affordable option in a great location. Ideal for solo travelers or students. Located in a quiet neighborhood with good transport connections.",
+      "Experience luxury with premium amenities and exceptional service. Perfect for business travelers or special occasions. High-quality furniture and professional cleaning.",
+      "Perfect for family vacations, this spacious property offers plenty of room and outdoor space. Quiet location with good access to city center and attractions.",
+      "Modern design meets comfort in this well-appointed accommodation. Great for both short and long stays. All utilities included in the price.",
+      "Recently renovated property with brand new furniture and appliances. Excellent location for exploring the city. Secure building with 24/7 reception.",
+      "Traditional style accommodation with character and history. Original features combined with modern comforts. Unique atmosphere and charm.",
+      "Bright and airy space with large windows and natural light. Minimalist design for maximum relaxation. Eco-friendly materials and energy efficient.",
+      "Fully equipped property ready for immediate move-in. Professional management and maintenance. Flexible rental terms available."
+    ],
+    "offerImages": [
+      "apartment.jpg",
+      "studio.jpg",
+      "loft.jpg",
+      "penthouse.jpg",
+      "villa.jpg",
+      "cottage.jpg",
+      "hotel-room.jpg",
+      "guest-house.jpg",
+      "townhouse.jpg",
+      "bungalow.jpg"
+    ],
+    "types": [
+      "apartment",
+      "house",
+      "room",
+      "hotel"
+    ],
+    "goods": [
+      "Breakfast",
+      "Air conditioning",
+      "Laptop friendly workspace",
+      "Baby seat",
+      "Washer",
+      "Towels",
+      "Fridge"
+    ],
+    "users": [
+      "Alice Johnson",
+      "Bob Smith",
+      "Charlie Brown",
+      "Diana Miller",
+      "Ethan Davis",
+      "Fiona Wilson",
+      "George Taylor",
+      "Hannah Anderson",
+      "Ivan Petrov",
+      "Julia Martin"
+    ],
+    "emails": [
+      "alice@six-cities.local",
+      "bob@six-cities.local",
+      "charlie@six-cities.local",
+      "diana@six-cities.local",
+      "ethan@six-cities.local",
+      "fiona@six-cities.local",
+      "george@six-cities.local",
+      "hannah@six-cities.local",
+      "ivan@six-cities.local",
+      "julia@six-cities.local"
+    ],
+    "avatars": [
+      "avatar1.jpg",
+      "avatar2.jpg",
+      "avatar3.jpg",
+      "avatar4.jpg",
+      "avatar5.jpg",
+      "avatar6.jpg",
+      "avatar7.jpg",
+      "avatar8.jpg"
+    ],
+    "locations": [
+      {"latitude": 48.85661, "longitude": 2.351499},
+      {"latitude": 50.938361, "longitude": 6.959974},
+      {"latitude": 50.846557, "longitude": 4.351697},
+      {"latitude": 52.370216, "longitude": 4.895168},
+      {"latitude": 53.550341, "longitude": 10.000654},
+      {"latitude": 51.225402, "longitude": 6.776314}
+    ]
+  }
+}

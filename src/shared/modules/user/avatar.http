@@ -1,0 +1,124 @@
+### ========================================
+### ТЕСТИРОВАНИЕ ЗАГРУЗКИ АВАТАРА
+### ========================================
+
+@baseUrl = http://localhost:3000
+
+### ========================================
+### 1. РЕГИСТРАЦИЯ ПОЛЬЗОВАТЕЛЯ ДЛЯ ТЕСТА АВАТАРА
+### ========================================
+# @name register
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Avatar Test",
+  "email": "avatar-test-1@example.com",
+  "password": "123456",
+  "type": "common"
+}
+
+###
+
+### ========================================
+### 2. ВХОД В СИСТЕМУ (получение JWT токена)
+### ========================================
+# @name login
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "avatar-test-1@example.com",
+  "password": "123456"
+}
+
+###
+
+### ========================================
+### 3. СОХРАНЯЕМ ТОКЕН (скопируйте из ответа выше)
+### ========================================
+@authToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OWE2ZGM5MWUyMGVmZTcwYTFkNjljYTUiLCJlbWFpbCI6ImF2YXRhci10ZXN0LTFAZXhhbXBsZS5jb20iLCJuYW1lIjoiQXZhdGFyIFRlc3QiLCJ0eXBlIjoiY29tbW9uIiwiaWF0IjoxNzcyNTQzMTM2LCJleHAiOjE3NzI3MTU5MzZ9.IEWzY31w2oP4Ca7ce2_10ThvIvhHfedrRdoEWJCleHE
+
+###
+
+### ========================================
+### 4. ЗАГРУЗКА АВАТАРА (НОВЫЙ МАРШРУТ - без ID в URL)
+### ========================================
+POST {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="avatar"; filename="test-avatar.jpg"
+Content-Type: image/jpeg
+
+< ./mocks/test-avatar.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### ========================================
+### 5. ЗАГРУЗКА ДРУГОГО АВАТАРА (обновление)
+### ========================================
+POST {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="avatar"; filename="test-avatar2.jpg"
+Content-Type: image/jpeg
+
+< ./mocks/test-avatar2.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### ========================================
+### 6. УДАЛЕНИЕ АВАТАРА
+### ========================================
+DELETE {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
+
+###
+
+### ========================================
+### ТЕСТЫ С ОШИБКАМИ
+### ========================================
+
+### 7. ЗАГРУЗКА БЕЗ ТОКЕНА (должна вернуть 401)
+POST {{baseUrl}}/users/avatar
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="avatar"; filename="test-avatar.jpg"
+Content-Type: image/jpeg
+
+< ./mocks/test-avatar.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### 8. ЗАГРУЗКА БЕЗ ФАЙЛА (должна вернуть 400)
+POST {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="avatar"; filename=""
+Content-Type: image/jpeg
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### 9. ЗАГРУЗКА ФАЙЛА НЕВЕРНОГО ТИПА (должна вернуть 400)
+POST {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="avatar"; filename="test.txt"
+Content-Type: text/plain
+
+< ./mocks/test.txt
+------WebKitFormBoundary7MA4YWxkTrZu0gW--

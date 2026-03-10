@@ -1,0 +1,221 @@
+### ========================================
+### TESTING COMMENTS
+### ========================================
+
+@baseUrl = http://localhost:3000
+
+### ========================================
+### 1. LOGIN (get JWT token)
+### ========================================
+# @name login
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "123456"
+}
+
+###
+
+### ========================================
+### 2. SAVE TOKEN (copy from response above)
+### ========================================
+@authToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OThkZWI4NDE4MDMyZTU3MDNmZDE1ZGYiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJuYW1lIjoiSm9obiBEb2UiLCJ0eXBlIjoiY29tbW9uIiwiaWF0IjoxNzcyNTQzMTkwLCJleHAiOjE3NzI3MTU5OTB9.349_FteVrsrWnuw2_vfnr4WzA7AcqhqSg3NP8GjCFE4
+
+###
+
+### ========================================
+### 3. GET ALL COMMENTS FOR OFFER (public - no auth required)
+### ========================================
+GET {{baseUrl}}/offers/694423a789d72214ee02a24a/comments
+
+###
+
+### ========================================
+### 4. CREATE NEW COMMENT (requires authorization)
+### ========================================
+POST {{baseUrl}}/offers/694423a789d72214ee02a24a/comments
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "text": "Great apartment! Very clean and cozy. Highly recommended!",
+  "rating": 5
+}
+
+###
+
+### ========================================
+### 5. CREATE ANOTHER COMMENT FOR DIFFERENT OFFER
+### ========================================
+POST {{baseUrl}}/offers/694423a789d72214ee02a252/comments
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "text": "Nice place, clean and comfortable. Shops and transport nearby.",
+  "rating": 4
+}
+
+###
+
+### ========================================
+### 6. CREATE COMMENT WITH MINIMAL TEXT LENGTH (should return 400)
+### ========================================
+POST {{baseUrl}}/offers/694423a789d72214ee02a24a/comments
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "text": "Ok",
+  "rating": 5
+}
+
+###
+
+### ========================================
+### 7. CREATE COMMENT WITH INVALID RATING (should return 400)
+### ========================================
+POST {{baseUrl}}/offers/694423a789d72214ee02a24a/comments
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "text": "Good place but has some issues",
+  "rating": 10
+}
+
+###
+
+### ========================================
+### 8. CREATE COMMENT WITHOUT TOKEN (should return 401)
+### ========================================
+POST {{baseUrl}}/offers/694423a789d72214ee02a24a/comments
+Content-Type: application/json
+
+{
+  "text": "Test comment without token",
+  "rating": 3
+}
+
+###
+
+### ========================================
+### 9. CREATE COMMENT WITHOUT REQUIRED FIELDS (should return 400)
+### ========================================
+POST {{baseUrl}}/offers/694423a789d72214ee02a24a/comments
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "text": "Only text"
+}
+
+###
+
+### ========================================
+### 10. GET COMMENTS FOR NON-EXISTENT OFFER (should return empty array)
+### ========================================
+GET {{baseUrl}}/offers/000000000000000000000000/comments
+
+###
+
+### ========================================
+### 11. CREATE COMMENT FOR NON-EXISTENT OFFER (should return 404)
+### ========================================
+POST {{baseUrl}}/offers/000000000000000000000000/comments
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "text": "This offer does not exist",
+  "rating": 3
+}
+
+###
+
+### ========================================
+### 12. INVALID OFFER ID FORMAT (should return 400)
+### ========================================
+GET {{baseUrl}}/offers/not-an-object-id/comments
+
+###
+
+### ========================================
+### 13. GET COMMENTS AFTER ADDING (should return all comments)
+### ========================================
+GET {{baseUrl}}/offers/694423a789d72214ee02a24a/comments
+
+###
+
+### ========================================
+### 14. CREATE COMMENT WITH MIN RATING (1)
+### ========================================
+POST {{baseUrl}}/offers/694423a789d72214ee02a24a/comments
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "text": "Did not like it, noisy and dirty",
+  "rating": 1
+}
+
+###
+
+### ========================================
+### 15. CREATE COMMENT WITH MAX RATING (5)
+### ========================================
+POST {{baseUrl}}/offers/694423a789d72214ee02a24a/comments
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "text": "Excellent place, will come back again!",
+  "rating": 5
+}
+
+###
+
+### ========================================
+### 16. CHECK COMMENTS SORTING (newest first)
+### ========================================
+GET {{baseUrl}}/offers/694423a789d72214ee02a24a/comments
+
+###
+
+### ========================================
+### 17. CREATE COMMENT WITH DIFFERENT USER (login as Jane)
+### ========================================
+# First login as Jane Smith
+# @name loginJane
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "jane@example6.com",
+  "password": "qwerty"
+}
+
+###
+
+@authTokenJane = eyJhbGciOiJIUzI1NiJ9...
+
+###
+
+### 18. CREATE COMMENT AS JANE
+POST {{baseUrl}}/offers/694423a789d72214ee02a24a/comments
+Authorization: Bearer {{authTokenJane}}
+Content-Type: application/json
+
+{
+  "text": "Beautiful apartment with amazing view!",
+  "rating": 5
+}
+
+###
+
+### ========================================
+### 19. VERIFY ALL COMMENTS FOR OFFER (should show comments from different users)
+### ========================================
+GET {{baseUrl}}/offers/694423a789d72214ee02a24a/comments

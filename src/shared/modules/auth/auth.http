@@ -1,0 +1,56 @@
+### ========================================
+### ТЕСТИРОВАНИЕ JWT АВТОРИЗАЦИИ
+### ========================================
+
+@baseUrl = http://localhost:3000
+
+### ========================================
+### 1. ВХОД В СИСТЕМУ (получение JWT токена)
+### ========================================
+# Используем существующего пользователя из user.http
+# @name login
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "123456"
+}
+
+###
+
+### ========================================
+### 2. СОХРАНЯЕМ ТОКЕН (скопируйте из ответа выше)
+### ========================================
+@authToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OThkZWI4NDE4MDMyZTU3MDNmZDE1ZGYiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJuYW1lIjoiSm9obiBEb2UiLCJ0eXBlIjoiY29tbW9uIiwiaWF0IjoxNzcyNTQzMDIyLCJleHAiOjE3NzI3MTU4MjJ9.EEr9gn4kNbkF9cV5N9L4Y4k0wDuePSs0fMj2yVbVkqo
+
+###
+
+### ========================================
+### 3. ЗАГРУЗКА АВАТАРА (требуется авторизация)
+### ========================================
+POST {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="avatar"; filename="test-avatar.jpg"
+Content-Type: image/jpeg
+
+< ./mocks/test-avatar.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### ========================================
+### 4. УДАЛЕНИЕ АВАТАРА (требуется авторизация)
+### ========================================
+DELETE {{baseUrl}}/users/avatar
+Authorization: Bearer {{authToken}}
+
+###
+
+### ========================================
+### 5. ПОПЫТКА ДОСТУПА БЕЗ ТОКЕНА (должна вернуть 401)
+### ========================================
+DELETE {{baseUrl}}/users/avatar
