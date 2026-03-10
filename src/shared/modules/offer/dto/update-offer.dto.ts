@@ -187,4 +187,4 @@ export const updateOfferSchema = Joi.object({
         'number.max': 'Longitude must be between -180 and 180'
       })
   }).optional()
-}).min(1); // Хотя бы одно поле должно быть для обновления
+}).min(1);

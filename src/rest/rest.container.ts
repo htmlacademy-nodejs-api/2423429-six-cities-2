@@ -1,7 +1,7 @@
 import { Container } from 'inversify';
 import { RestApplication } from './rest.application.js';
 import { Component } from '../shared/types/index.js';
-import { Logger, PinoLogger } from '../shared/libs/logger/index.js';
+import { Logger, PinoLogger } from '../shared/libs/logger/index.js'; // 👈 PinoLogger
 import { Config, RestConfig, RestSchema } from '../shared/libs/config/index.js';
 import { DatabaseClient, MongoDatabaseClient } from '../shared/libs/database-client/index.js';
 import { AppExceptionFilter } from '../shared/libs/rest/exception-filter/app-exception-filter.js';
@@ -20,5 +20,6 @@ export function createRestApplicationContainer() {
   restApplicationContainer.bind<ExceptionFilter>(Component.ExceptionFilter).to(AppExceptionFilter).inSingletonScope();
   restApplicationContainer.bind<AuthService>(Component.AuthService).to(JWTAuthService).inSingletonScope();
   restApplicationContainer.bind<PrivateRouteMiddleware>(Component.PrivateRouteMiddleware).to(PrivateRouteMiddleware).inSingletonScope();
+
   return restApplicationContainer;
 }

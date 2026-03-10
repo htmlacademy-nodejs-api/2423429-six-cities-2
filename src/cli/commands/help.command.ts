@@ -18,15 +18,20 @@ export class HelpCommand implements Command {
 ${chalk.bold('Программа для подготовки данных для REST API сервера.')}
 
 ${chalk.yellow('📝 Пример использования:')}
-    ${chalk.green('npm run ts ./src/main.cli.ts -- --<command> [--arguments]')}
+    ${chalk.green('npm run cli -- --<command> [--arguments]')}
 
-${chalk.blue('🎯 Доступные команды:')}
+${chalk.blue('Доступные команды:')}
     ${chalk.green('--version')}                   # ${chalk.gray('выводит номер версии')}
     ${chalk.green('--help')}                      # ${chalk.gray('печатает этот текст')}
     ${chalk.green('--import <path>')}             # ${chalk.gray('импортирует данные из TSV')}
+    ${chalk.green('--generate <n> <path> <url>')} # ${chalk.gray('генерирует n тестовых предложений')}
 
-${chalk.magenta('🚀 Пример импорта:')}
-    ${chalk.green('npm run ts ./src/main.cli.ts -- --import ./mocks/mock-data.tsv')}
+${chalk.magenta('Пример импорта:')}
+    ${chalk.green('npm run cli -- --import ./mocks/mock-data.tsv')}
+
+${chalk.magenta('Пример генерации:')}
+    ${chalk.green('npm run cli -- --generate 10 ./mocks/test-data.tsv http://localhost:3000')}
+>>>>>>> feature-fixes
 
 ${chalk.gray('──────────────────────────────────────────────────────────')}
 ${chalk.italic('Для дополнительной информации обратитесь к документации.')}

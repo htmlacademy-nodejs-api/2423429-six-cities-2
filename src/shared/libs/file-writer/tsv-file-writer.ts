@@ -5,17 +5,22 @@ export class TSVFileWriter implements FileWrite {
   private stream: WriteStream;
 
   constructor(filename: string) {
-
     this.stream = createWriteStream(filename, {
       flags: 'w',
       encoding: 'utf-8',
       autoClose: true,
     });
+
+    this.stream.on('error', (error) => {
+      console.error(`File write error: ${error.message}`);
+    });
   }
 
   public async write(row: string): Promise<unknown> {
+    console.log(`Writing row: ${row.substring(0, 50)}...`);
+
     const writeSuccess = this.stream.write(`${row}\n`);
-    if(! writeSuccess) {
+    if (!writeSuccess) {
       return new Promise((resolve) => {
         this.stream.once('drain', () => resolve(true));
       });

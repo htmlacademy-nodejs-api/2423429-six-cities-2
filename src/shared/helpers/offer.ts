@@ -1,4 +1,3 @@
-import { } from '../types/index.js';
 import { City, HousingType, Convenience, Offer } from '../types/offer.type.js';
 import { UserType, User } from '../types/user.type.js';
 
@@ -24,7 +23,7 @@ export function createOffer(offerData: string): Offer {
     rooms,
     guests,
     price,
-    conveniences,
+    goods,
     hostName,
     hostEmail,
     hostAvatar,
@@ -56,8 +55,8 @@ export function createOffer(offerData: string): Offer {
     'pro': UserType.Pro
   };
 
-  const parseConveniences = (conveniencesStr: string): Convenience[] => {
-    const convenienceMapping: Record<string, Convenience> = {
+  const parseGoods = (goodsStr: string): Convenience[] => {
+    const goodsMapping: Record<string, Convenience> = {
       'Breakfast': Convenience.Breakfast,
       'Air conditioning': Convenience.AirConditioning,
       'Laptop friendly workspace': Convenience.LaptopFriendlyWorkspace,
@@ -67,10 +66,10 @@ export function createOffer(offerData: string): Offer {
       'Fridge': Convenience.Fridge
     };
 
-    return conveniencesStr.split(';')
-      .map((conv) => conv.trim())
-      .filter((conv) => conv in convenienceMapping)
-      .map((conv) => convenienceMapping[conv]);
+    return goodsStr.split(';')
+      .map((item) => item.trim())
+      .filter((item) => item in goodsMapping)
+      .map((item) => goodsMapping[item]);
   };
 
   const parseImages = (imagesStr: string): string[] =>
@@ -98,7 +97,7 @@ export function createOffer(offerData: string): Offer {
     rooms: parseInt(rooms, 10),
     guests: parseInt(guests, 10),
     price: parseInt(price, 10),
-    conveniences: parseConveniences(conveniences),
+    goods: parseGoods(goods),
     host: user,
     commentsCount: parseInt(commentsCount, 10),
     location: {

@@ -9,24 +9,8 @@ import {
   VersionCommand,
 } from './cli/index.js';
 
-// Список обязательных переменных окружения
-// const REQUIRED_ENV_VARS = [
-//   'PORT', 'SALT', 'DB_HOST', 'DB_USER', 'DB_PASSWORD',
-//   'DB_NAME', 'DB_PORT', 'UPLOAD_DIRECTORY', 'JWT_SECRET'
-// ];
-
-// function checkEnvironmentVariables() {
-//   const missingVars = REQUIRED_ENV_VARS.filter((envVar) => !process.env[envVar]);
-
-//   if (missingVars.length > 0) {
-//     throw new Error(`Missing environment variables: ${missingVars.join(', ')}`);
-//   }
-//   return true;
-// }
-
 function bootstrap() {
   try {
-    //checkEnvironmentVariables();
 
     const cliApplication = new CLIApplication();
     cliApplication.registerCommands([

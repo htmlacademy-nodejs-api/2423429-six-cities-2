@@ -14,7 +14,6 @@ export class PinoLogger implements Logger {
     const logFilePath = 'logs/rest.log';
     const destination = resolve(modulePath, '../../../', logFilePath);
 
-    // Создаем директорию logs если она не существует
     const logDir = dirname(destination);
     if (!existsSync(logDir)) {
       mkdirSync(logDir, { recursive: true });

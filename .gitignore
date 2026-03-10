@@ -11,4 +11,4 @@ uploads/
 .DS_Store
 coverage
 *.log
-.env
+*.env

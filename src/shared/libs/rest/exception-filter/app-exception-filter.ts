@@ -1,16 +1,16 @@
-// app-exception-filter.ts
+
 import { StatusCodes } from 'http-status-codes';
 import { NextFunction, Request, Response } from 'express';
-import { injectable, inject } from 'inversify'; // Убедитесь что inject импортирован
+import { injectable, inject } from 'inversify';
 import { BaseExceptionFilter } from './base-exception-filter.abstract.js';
 import { Logger } from '../../logger/index.js';
 import { HttpError } from '../errors/http-error.js';
-import { Component } from '../../../types/index.js'; // Импортируем Component если нужно
+import { Component } from '../../../types/index.js';
 
 @injectable()
 export class AppExceptionFilter extends BaseExceptionFilter {
   constructor(
-    @inject(Component.Logger) logger: Logger // Добавляем @inject()
+    @inject(Component.Logger) logger: Logger
   ) {
     super(logger);
   }

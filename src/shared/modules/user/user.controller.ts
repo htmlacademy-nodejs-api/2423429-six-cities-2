@@ -48,6 +48,7 @@ export class UserController extends BaseController {
       handler: this.login,
       middlewares: [new ValidateDtoMiddleware(loginUserSchema)]
     });
+
     this.addRoute({
       path: '/users/me',
       method: HttpMethod.Get,
@@ -81,29 +82,45 @@ export class UserController extends BaseController {
   }
 
   private createUser = asyncHandler(async (req: Request, res: Response) => {
+    this.logger.info('🟢 CONTROLLER: createUser STARTED');
+    this.logger.info(`📨 Request body: ${JSON.stringify(req.body)}`);
+
     const dto = req.body as CreateUserDto;
 
     const salt = this.config.get('SALT');
+    this.logger.info(`🧂 Salt from config: ${salt ? 'present' : 'MISSING'}`);
+
     if (!salt) {
+      const error = new Error('SALT is not configured in environment variables');
+      this.logger.error('❌ SALT is missing!', error);
       throw new HttpError(
         StatusCodes.INTERNAL_SERVER_ERROR,
         'SALT is not configured in environment variables'
       );
     }
 
+    this.logger.info('📞 Calling userService.create...');
     const user = await this.userService.create(dto, salt);
+    this.logger.info('✅ userService.create completed');
 
     const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
       excludeExtraneousValues: true,
     });
 
+    this.logger.info(`📤 Response prepared for user: ${userResponse.email}`);
+    this.logger.info('🟢 CONTROLLER: createUser COMPLETED');
+
     this.created(res, userResponse);
   });
 
   private getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
+    this.logger.info('🟢 CONTROLLER: getCurrentUser STARTED');
+
     const userId = req.user?.userId;
 
     if (!userId) {
+      const error = new Error('User not authenticated');
+      this.logger.error('❌ User not authenticated', error);
       throw new HttpError(
         StatusCodes.UNAUTHORIZED,
         'User not authenticated',
@@ -111,8 +128,12 @@ export class UserController extends BaseController {
       );
     }
 
+    this.logger.info(`🔍 Finding user by ID: ${userId}`);
     const user = await this.userService.findById(userId);
+
     if (!user) {
+      const error = new Error(`User with id ${userId} not found`);
+      this.logger.error(`❌ User with id ${userId} not found`, error);
       throw new HttpError(
         StatusCodes.NOT_FOUND,
         `User with id ${userId} not found`
@@ -123,37 +144,53 @@ export class UserController extends BaseController {
       excludeExtraneousValues: true,
     });
 
+    this.logger.info(`✅ User found: ${userResponse.email}`);
+    this.logger.info('🟢 CONTROLLER: getCurrentUser COMPLETED');
+
     this.ok(res, userResponse);
   });
 
   private login = asyncHandler(async (req: Request, res: Response) => {
+    this.logger.info('🟢 CONTROLLER: login STARTED');
+    this.logger.info(`📨 Login attempt for email: ${req.body.email}`);
+
     const { email, password } = req.body as LoginUserDto;
 
     const salt = this.config.get('SALT');
     if (!salt) {
+      const error = new Error('SALT is not configured');
+      this.logger.error('❌ SALT is missing!', error);
       throw new HttpError(
         StatusCodes.INTERNAL_SERVER_ERROR,
         'SALT is not configured in environment variables'
       );
     }
 
+    this.logger.info('🔍 Finding user by email...');
     const user = await this.userService.findByEmail(email);
+
     if (!user) {
+      const error = new Error(`User not found: ${email}`);
+      this.logger.warn('⚠️ User not found:', error);
       throw new HttpError(
         StatusCodes.UNAUTHORIZED,
         'Invalid email or password'
       );
     }
 
+    this.logger.info('🔐 Verifying password...');
     const isValid = await this.userService.verifyPassword(email, password, salt);
+
     if (!isValid) {
+      const error = new Error(`Invalid password for: ${email}`);
+      this.logger.warn('⚠️ Invalid password for user', error);
       throw new HttpError(
         StatusCodes.UNAUTHORIZED,
         'Invalid email or password'
       );
     }
 
-    // Генерируем JWT токен через AuthService
+    this.logger.info('🎟️ Generating JWT token...');
     const token = await this.authService.authenticate(
       user._id.toString(),
       user.email,
@@ -165,6 +202,9 @@ export class UserController extends BaseController {
       excludeExtraneousValues: true,
     });
 
+    this.logger.info(`✅ Login successful for: ${email}`);
+    this.logger.info('🟢 CONTROLLER: login COMPLETED');
+
     this.ok(res, {
       user: userResponse,
       token: token
@@ -172,11 +212,14 @@ export class UserController extends BaseController {
   });
 
   private uploadAvatar = asyncHandler(async (req: Request, res: Response) => {
-    // Получаем userId из токена
+    this.logger.info('🟢 CONTROLLER: uploadAvatar STARTED');
+
     const userId = req.user?.userId;
     const file = req.file;
 
     if (!userId) {
+      const error = new Error('User not authenticated');
+      this.logger.error('❌ User not authenticated', error);
       throw new HttpError(
         StatusCodes.UNAUTHORIZED,
         'User not authenticated',
@@ -185,14 +228,20 @@ export class UserController extends BaseController {
     }
 
     if (!file) {
+      const error = new Error('Avatar file is missing');
+      this.logger.error('❌ Avatar file is missing', error);
       throw new HttpError(
         StatusCodes.BAD_REQUEST,
         'Avatar file is missing'
       );
     }
 
+    this.logger.info(`🔍 Finding user by ID: ${userId}`);
     const user = await this.userService.findById(userId);
+
     if (!user) {
+      const error = new Error(`User with id ${userId} not found`);
+      this.logger.error(`❌ User with id ${userId} not found`, error);
       throw new HttpError(
         StatusCodes.NOT_FOUND,
         `User with id ${userId} not found`
@@ -201,26 +250,31 @@ export class UserController extends BaseController {
 
     // Если у пользователя уже был аватар и он не дефолтный - удаляем старый файл
     if (user.avatar && user.avatar !== 'default-avatar.jpg') {
+      this.logger.info(`🗑️ Removing old avatar: ${user.avatar}`);
       try {
         const oldFileName = user.avatar.replace('/static/', '');
         const oldFilePath = join(process.cwd(), this.config.get('UPLOAD_DIRECTORY'), oldFileName);
         await unlink(oldFilePath);
-        this.logger.info(`Old avatar deleted: ${oldFileName}`);
-      } catch (error) {
-        this.logger.warn(`Failed to delete old avatar: ${error}`);
+        this.logger.info(`✅ Old avatar deleted: ${oldFileName}`);
+      } catch (err) {
+        this.logger.warn(`⚠️ Failed to delete old avatar: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
 
     // Формируем URL для нового аватара
     const avatarUrl = `/static/${file.filename}`;
+    this.logger.info(`📸 New avatar URL: ${avatarUrl}`);
 
     // Обновляем аватар пользователя
     user.avatar = avatarUrl;
     await user.save();
+    this.logger.info('✅ User avatar updated in database');
 
     const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
       excludeExtraneousValues: true,
     });
+
+    this.logger.info('🟢 CONTROLLER: uploadAvatar COMPLETED');
 
     this.ok(res, {
       success: true,
@@ -231,10 +285,13 @@ export class UserController extends BaseController {
   });
 
   private deleteAvatar = asyncHandler(async (req: Request, res: Response) => {
-    // Получаем userId из токена
+    this.logger.info('🟢 CONTROLLER: deleteAvatar STARTED');
+
     const userId = req.user?.userId;
 
     if (!userId) {
+      const error = new Error('User not authenticated');
+      this.logger.error('❌ User not authenticated', error);
       throw new HttpError(
         StatusCodes.UNAUTHORIZED,
         'User not authenticated',
@@ -242,8 +299,12 @@ export class UserController extends BaseController {
       );
     }
 
+    this.logger.info(`🔍 Finding user by ID: ${userId}`);
     const user = await this.userService.findById(userId);
+
     if (!user) {
+      const error = new Error(`User with id ${userId} not found`);
+      this.logger.error(`❌ User with id ${userId} not found`, error);
       throw new HttpError(
         StatusCodes.NOT_FOUND,
         `User with id ${userId} not found`
@@ -252,23 +313,27 @@ export class UserController extends BaseController {
 
     // Если есть аватар и он не дефолтный - удаляем файл
     if (user.avatar && user.avatar !== 'default-avatar.jpg') {
+      this.logger.info(`🗑️ Deleting avatar file: ${user.avatar}`);
       try {
         const fileName = user.avatar.replace('/static/', '');
         const filePath = join(process.cwd(), this.config.get('UPLOAD_DIRECTORY'), fileName);
         await unlink(filePath);
-        this.logger.info(`Avatar deleted: ${fileName}`);
-      } catch (error) {
-        this.logger.warn(`Failed to delete avatar file: ${error}`);
+        this.logger.info(`✅ Avatar deleted: ${fileName}`);
+      } catch (err) {
+        this.logger.warn(`⚠️ Failed to delete avatar file: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
 
-    // Возвращаем дефолтный аватар вместо пустой строки
+    // Возвращаем дефолтный аватар
     user.avatar = 'default-avatar.jpg';
     await user.save();
+    this.logger.info('✅ User avatar reset to default');
 
     const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
       excludeExtraneousValues: true,
     });
+
+    this.logger.info('🟢 CONTROLLER: deleteAvatar COMPLETED');
 
     this.ok(res, {
       success: true,

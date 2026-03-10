@@ -1,4 +1,3 @@
-
 import { Command } from './command.interface.js';
 import { MockServerData } from '../../shared/types/index.js';
 import { TSVOfferGenerator } from '../../shared/libs/offer-generator/tsv-offer-generator.js';
@@ -11,18 +10,28 @@ export class GenerateCommand implements Command {
 
   private async load(url: string) {
     try {
+      console.log(`Loading data from ${url}...`);
       this.initialData = await got.get(url).json();
-    } catch {
-      throw new Error(`Can't loa data from ${url}`);
+      console.log(`Loaded ${this.initialData.titles?.length} titles`);
+    } catch (error) {
+      console.error(`Load error: ${error}`);
+      throw new Error(`Can't load data from ${url}`);
     }
   }
 
   private async write(filepath: string, offerCount: number) {
+    console.log(`Writing ${offerCount} offers to ${filepath}...`);
+
     const tsvOfferGenerator = new TSVOfferGenerator(this.initialData);
     const tsvFileWriter = new TSVFileWriter(filepath);
+
     for (let i = 0; i < offerCount; i++) {
-      await tsvFileWriter.write(tsvOfferGenerator.generate());
+      const generated = tsvOfferGenerator.generate();
+      console.log(`Generated offer ${i + 1}: ${generated.substring(0, 50)}...`);
+      await tsvFileWriter.write(generated);
     }
+
+    console.log(`Finished writing to ${filepath}`);
   }
 
   public getName(): string {
@@ -33,13 +42,14 @@ export class GenerateCommand implements Command {
     const [count, filepath, url] = parameters;
     const offerCount = Number.parseInt(count, 10);
 
+    console.log(`Execute generate: count=${count}, filepath=${filepath}, url=${url}`);
+
     try {
       await this.load(url);
       await this.write(filepath, offerCount);
-      console.info(`File ${filepath} was created!`);
+      console.info(`✅ File ${filepath} was created!`);
     } catch (error: unknown) {
-      console.error('Can\'t generate data');
-
+      console.error('❌ Can\'t generate data');
       console.error(getErrorMessage(error));
     }
   }

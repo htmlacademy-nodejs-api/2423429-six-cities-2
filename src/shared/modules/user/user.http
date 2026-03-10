@@ -75,7 +75,7 @@ Content-Type: application/json
 }
 
 ### 2. Сохраните токен
-@authToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OThkZWI4NDE4MDMyZTU3MDNmZDE1ZGYiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJuYW1lIjoiSm9obiBEb2UiLCJ0eXBlIjoiY29tbW9uIiwiaWF0IjoxNzczMDUyMTM0LCJleHAiOjE3NzMyMjQ5MzR9.20YoMji1JNGR3gQCVJTCNUbZxZ1ICeHtDwmlFMOOj1U
+@authToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2OThkZWI4NDE4MDMyZTU3MDNmZDE1ZGYiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJuYW1lIjoiSm9obiBEb2UiLCJ0eXBlIjoiY29tbW9uIiwiaWF0IjoxNzczMTU2NjgyLCJleHAiOjE3NzMzMjk0ODJ9.kNrL_HMpTmxG3nH95PN6IP2q2buMtglz3HcNG-U0MN0
 
 ### 3. Получите информацию о текущем пользователе
 GET http://localhost:3000/users/me
