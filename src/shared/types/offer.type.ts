@@ -45,7 +45,11 @@ export type Offer = {
   rooms: number;
   guests: number;
   price: number;
+<<<<<<< HEAD
   conveniences: Convenience[];
+=======
+  goods: Convenience[];
+>>>>>>> feature-fixes
   host: User;
   commentsCount: number;
   location: Location;

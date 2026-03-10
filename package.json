@@ -17,7 +17,11 @@
     "clean": "rimraf dist",
     "ts": "node --loader ts-node/esm",
     "mock:server": "json-server --watch mocks/mock-server-data.json --port 3123",
+<<<<<<< HEAD
     "cli": "npm run ts ./src/main.cli.ts"
+=======
+    "cli": "npm run ts -- ./src/main.cli.ts"
+>>>>>>> feature-fixes
   },
   "devDependencies": {
     "@types/chalk": "0.4.31",

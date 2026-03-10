@@ -9,6 +9,7 @@ import {
   VersionCommand,
 } from './cli/index.js';
 
+<<<<<<< HEAD
 // Список обязательных переменных окружения
 // const REQUIRED_ENV_VARS = [
 //   'PORT', 'SALT', 'DB_HOST', 'DB_USER', 'DB_PASSWORD',
@@ -27,6 +28,10 @@ import {
 function bootstrap() {
   try {
     //checkEnvironmentVariables();
+=======
+function bootstrap() {
+  try {
+>>>>>>> feature-fixes
 
     const cliApplication = new CLIApplication();
     cliApplication.registerCommands([

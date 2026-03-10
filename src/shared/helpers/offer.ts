@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { } from '../types/index.js';
+=======
+>>>>>>> feature-fixes
 import { City, HousingType, Convenience, Offer } from '../types/offer.type.js';
 import { UserType, User } from '../types/user.type.js';
 
@@ -24,7 +27,11 @@ export function createOffer(offerData: string): Offer {
     rooms,
     guests,
     price,
+<<<<<<< HEAD
     conveniences,
+=======
+    goods,
+>>>>>>> feature-fixes
     hostName,
     hostEmail,
     hostAvatar,
@@ -56,8 +63,13 @@ export function createOffer(offerData: string): Offer {
     'pro': UserType.Pro
   };
 
+<<<<<<< HEAD
   const parseConveniences = (conveniencesStr: string): Convenience[] => {
     const convenienceMapping: Record<string, Convenience> = {
+=======
+  const parseGoods = (goodsStr: string): Convenience[] => {
+    const goodsMapping: Record<string, Convenience> = {
+>>>>>>> feature-fixes
       'Breakfast': Convenience.Breakfast,
       'Air conditioning': Convenience.AirConditioning,
       'Laptop friendly workspace': Convenience.LaptopFriendlyWorkspace,
@@ -67,10 +79,17 @@ export function createOffer(offerData: string): Offer {
       'Fridge': Convenience.Fridge
     };
 
+<<<<<<< HEAD
     return conveniencesStr.split(';')
       .map((conv) => conv.trim())
       .filter((conv) => conv in convenienceMapping)
       .map((conv) => convenienceMapping[conv]);
+=======
+    return goodsStr.split(';')
+      .map((item) => item.trim())
+      .filter((item) => item in goodsMapping)
+      .map((item) => goodsMapping[item]);
+>>>>>>> feature-fixes
   };
 
   const parseImages = (imagesStr: string): string[] =>
@@ -98,7 +117,12 @@ export function createOffer(offerData: string): Offer {
     rooms: parseInt(rooms, 10),
     guests: parseInt(guests, 10),
     price: parseInt(price, 10),
+<<<<<<< HEAD
     conveniences: parseConveniences(conveniences),
+=======
+    // ✅ ИСПРАВЛЕНО: conveniences → goods
+    goods: parseGoods(goods),
+>>>>>>> feature-fixes
     host: user,
     commentsCount: parseInt(commentsCount, 10),
     location: {

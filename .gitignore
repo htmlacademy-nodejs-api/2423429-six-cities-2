@@ -5,7 +5,11 @@
 /dist/
 /docs/
 .idea/*
+<<<<<<< HEAD
 /mocks/test-data.tsv
+=======
+
+>>>>>>> feature-fixes
 uploads/
 
 .DS_Store

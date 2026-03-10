@@ -48,7 +48,10 @@ export class ImportCommand implements Command {
 
   private async saveOffer(offerData: Offer): Promise<void> {
     try {
+<<<<<<< HEAD
       // 1. Find or create user using the new method
+=======
+>>>>>>> feature-fixes
       const user = await this.userService.findOrCreate({
         name: offerData.host.name,
         email: offerData.host.email,
@@ -57,10 +60,15 @@ export class ImportCommand implements Command {
         avatar: offerData.host.avatar || 'default-avatar.jpg'
       }, this.salt);
 
+<<<<<<< HEAD
       // Получаем ID пользователя (MongoDB использует _id)
       const userId = user._id.toString();
 
       // 2. Create offer
+=======
+      const userId = user._id.toString();
+
+>>>>>>> feature-fixes
       const offerDto = {
         title: offerData.title,
         description: offerData.description,
@@ -75,8 +83,13 @@ export class ImportCommand implements Command {
         rooms: offerData.rooms || 1,
         guests: offerData.guests || 1,
         price: offerData.price || 100,
+<<<<<<< HEAD
         goods: offerData.conveniences || [],
         host: userId, // Используем _id пользователя
+=======
+        goods: offerData.goods || [],
+        host: userId,
+>>>>>>> feature-fixes
         commentsCount: offerData.commentsCount || 0,
         location: offerData.location
       };

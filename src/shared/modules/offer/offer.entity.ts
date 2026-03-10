@@ -60,7 +60,11 @@ export class OfferEntity extends defaultClasses.TimeStamps implements Omit<Offer
   public price!: number;
 
   @prop({ required: true, type: [String], enum: Convenience })
+<<<<<<< HEAD
   public conveniences!: Convenience[];
+=======
+  public goods!: Convenience[];
+>>>>>>> feature-fixes
 
   @prop({ ref: UserEntity, required: true })
   public host!: Ref<UserEntity>;

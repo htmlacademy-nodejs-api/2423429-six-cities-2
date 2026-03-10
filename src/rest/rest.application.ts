@@ -38,6 +38,7 @@ export class RestApplication {
   }
 
   private _initMiddleware() {
+<<<<<<< HEAD
     // ========== CORS middleware ==========
     // Вариант 1: Разрешить все источники (для разработки)
     this.server.use(cors());
@@ -62,6 +63,12 @@ export class RestApplication {
     this.logger.info('CORS middleware initialized (restricted origins)');
     */
 
+=======
+    // CORS middleware
+    this.server.use(cors());
+    this.logger.info('CORS middleware initialized (all origins allowed)');
+
+>>>>>>> feature-fixes
     // JSON middleware
     this.server.use(express.json());
     this.logger.info('JSON middleware initialized');
